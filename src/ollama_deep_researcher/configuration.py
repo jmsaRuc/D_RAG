@@ -24,7 +24,12 @@ class Configuration(BaseModel):
         title="LLM Model Name",
         description="Name of the LLM model to use"
     )
-    llm_provider: Literal["ollama", "lmstudio"] = Field(
+    groq_llm: str = Field(
+        default="deepseek-r1-distill-llama-70b",
+        title="GROQ LLM Model Name",
+        description="Name of the GROQ LLM model to use"
+    )
+    llm_provider: Literal["ollama", "lmstudio", "groq"] = Field(
         default="ollama",
         title="LLM Provider",
         description="Provider for the LLM (Ollama or LMStudio)"
@@ -38,6 +43,11 @@ class Configuration(BaseModel):
         default=True,
         title="Fetch Full Page",
         description="Include the full page content in the search results"
+    )
+    groq_api_base: str = Field(
+        default="https://api.groq.com/",
+        title="GROQ API Base URL",
+        description="Base URL for the GROQ API"
     )
     ollama_base_url: str = Field(
         default="http://localhost:11434/",

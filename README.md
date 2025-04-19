@@ -214,6 +214,34 @@ URL: https://smith.langchain.com/studio/?baseUrl=http://0.0.0.0:2024
 Instead, visit this link with the correct baseUrl IP address: [`https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.1:2024`](https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.1:2024)
 
 
+## misc.
+### Running with Docker Compose ollama
 ```bash
 docker compose --env-file .env -f lanchain-docker-compose.yml --project-directory . up --build
+```
+
+## ollama .env
+```.env
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://host.docker.internal:21434
+LOCAL_LLM=deepseek-r1:1.5b-qwen-distill-fp16
+TAVILY_API_KEY=<your_tavily_api_key>
+MAX_WEB_RESEARCH_LOOPS=3
+FETCH_FULL_PAGE=True
+SEARCH_API=tavily
+
+LANGSMITH_API_KEY=<your_langsmith_api_key>
+```
+
+## groq_api .env
+```.env
+LLM_PROVIDER=groq
+GROQ_LLM=deepseek-r1-distill-llama-70b
+GROQ_API_KEY=<your_groq_api_key>
+TAVILY_API_KEY=<your_tavily_api_key>
+MAX_WEB_RESEARCH_LOOPS=3
+FETCH_FULL_PAGE=True
+SEARCH_API=tavily
+LANGSMITH_API_KEY=<your_langsmith_api_key>
+GROQ_API_BASE=https://api.groq.com/
 ```

@@ -49,6 +49,9 @@ services:
             FETCH_FULL_PAGE: ${FETCH_FULL_PAGE}
             SEARCH_API: ${SEARCH_API}
             LOCAL_LLM: ${LOCAL_LLM}
+            GROQ_API_KEY: ${GROQ_API_KEY}
+            GROQ_LLM: ${GROQ_LLM}
+            GROQ_API_BASE: ${GROQ_API_BASE}
     nginx-reverse-proxy:
         build:
             context: ./
