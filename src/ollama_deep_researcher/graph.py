@@ -1,6 +1,7 @@
 import json
 
-from typing_extensions import Literal
+from typing_extensions import Literal, Optional
+from typing import Dict
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
@@ -28,17 +29,70 @@ from ollama_deep_researcher.prompts import (
     query_writer_instructions,
     summarizer_instructions,
     reflection_instructions,
+    translate_texts_instructions,
+    query_writer_instructions_with_tag,
     get_current_date,
 )
 from ollama_deep_researcher.lmstudio import ChatLMStudio
 
 
 # Nodes
-def generate_query(state: SummaryState, config: RunnableConfig):
+def translate_research_topic(
+    state: SummaryState, config: RunnableConfig
+) -> Dict[str, str]:
+    """
+    Translate a Danish research topic into English using the configured LLM provider.
+    Parameters:
+        state (SummaryState): An object containing the Danish research topic.
+        config (RunnableConfig): Configuration for the LLM, including provider, model parameters, and settings.
+    Returns:
+        Dict[str, str]: A dictionary with:
+            - "research_topic_en": The original Danish research topic.
+            - "research_topic_da": The translated English research topic.
+    """
+
+    # Insert the Danish reasearch topic into the prompt
+    human_message_content = f"Translate the following text from Danish to English. \n <User Input> \n {state.research_topic} \n <User Input>\n\n"
+
+    # Configure
+    configurable = Configuration.from_runnable_config(config)
+
+    # Choose the appropriate LLM based on the provider
+    if configurable.llm_provider == "groq":
+        llm_translate_q = ChatGroq(
+            model=configurable.groq_llm,
+            temperature=0,
+            max_tokens=12000,
+        )
+    else:  # Default to Ollama
+        llm_translate_q = ChatOllama(
+            model=configurable.local_llm,
+            temperature=0,
+            num_predict=12000,
+        )
+
+    result = llm_translate_q.invoke(
+        [
+            SystemMessage(content=translate_texts_instructions),
+            HumanMessage(content=human_message_content),
+        ]
+    )
+
+    # Strip thinking tokens
+    if configurable.strip_thinking_tokens:
+        translated_research_topic = strip_thinking_tokens(result.content)
+
+    return {
+        "research_topic_en": state.research_topic,
+        "research_topic_da": translated_research_topic,
+    }
+
+
+def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[str, str]:
     """LangGraph node that generates a search query based on the research topic.
 
     Uses an LLM to create an optimized search query for web research based on
-    the user's research topic. Supports both LMStudio and Ollama as LLM providers.
+    the user's research topic. Supports both Groq and Ollama as LLM providers.
 
     Args:
         state: Current graph state containing the research topic
@@ -50,39 +104,38 @@ def generate_query(state: SummaryState, config: RunnableConfig):
 
     # Format the prompt
     current_date = get_current_date()
-    formatted_prompt = query_writer_instructions.format(
-        current_date=current_date, research_topic=state.research_topic
+    formatted_prompt = query_writer_instructions_with_tag.format(
+        current_date=current_date,
+        research_topic_da=state.research_topic_da,
+        research_topic_en=state.research_topic_en,
     )
 
-    # Generate a query
+    # Configure
     configurable = Configuration.from_runnable_config(config)
 
     # Choose the appropriate LLM based on the provider
-    if configurable.llm_provider == "lmstudio":
-        llm_json_mode = ChatLMStudio(
-            base_url=configurable.lmstudio_base_url,
-            model=configurable.local_llm,
-            temperature=0,
-            format="json",
-        )
     if configurable.llm_provider == "groq":
         llm_json_mode = ChatGroq(
-            model=configurable.groq_llm, 
+            model=configurable.groq_llm,
             temperature=0,
-            max_tokens=131072,
-            response_format={"type": "json_object"})
+            max_tokens=12000,
+            response_format={"type": "json_object"},
+        )
     else:  # Default to Ollama
         llm_json_mode = ChatOllama(
             base_url=configurable.ollama_base_url,
             model=configurable.local_llm,
             temperature=0,
+            num_predict=12000,
             format="json",
         )
-
+    # Generate a query
     result = llm_json_mode.invoke(
         [
             SystemMessage(content=formatted_prompt),
-            HumanMessage(content=f"Generate a query for web search:"),
+            HumanMessage(
+                content=f"Generate a query in Danish for searching a law database:"
+            ),
         ]
     )
 
@@ -219,10 +272,7 @@ def summarize_sources(state: SummaryState, config: RunnableConfig):
             temperature=0,
         )
     if configurable.llm_provider == "groq":
-        llm = ChatGroq(
-            model=configurable.groq_llm, 
-            temperature=0,
-            max_tokens=131072)
+        llm = ChatGroq(model=configurable.groq_llm, temperature=0, max_tokens=131072)
     else:  # Default to Ollama
         llm = ChatOllama(
             base_url=configurable.ollama_base_url,
@@ -272,11 +322,12 @@ def reflect_on_summary(state: SummaryState, config: RunnableConfig):
             format="json",
         )
     if configurable.llm_provider == "groq":
-        llm_json_mode= ChatGroq(
-            model=configurable.groq_llm, 
+        llm_json_mode = ChatGroq(
+            model=configurable.groq_llm,
             temperature=0,
             max_tokens=131072,
-            response_format={"type": "json_object"})
+            response_format={"type": "json_object"},
+        )
     else:  # Default to Ollama
         llm_json_mode = ChatOllama(
             base_url=configurable.ollama_base_url,
@@ -378,6 +429,7 @@ builder = StateGraph(
     output=SummaryStateOutput,
     config_schema=Configuration,
 )
+builder.add_node("translate_research_topic", translate_research_topic)
 builder.add_node("generate_query", generate_query)
 builder.add_node("web_research", web_research)
 builder.add_node("summarize_sources", summarize_sources)
@@ -385,7 +437,8 @@ builder.add_node("reflect_on_summary", reflect_on_summary)
 builder.add_node("finalize_summary", finalize_summary)
 
 # Add edges
-builder.add_edge(START, "generate_query")
+builder.add_edge(START, "translate_research_topic")
+builder.add_edge("translate_research_topic", "generate_query")
 builder.add_edge("generate_query", "web_research")
 builder.add_edge("web_research", "summarize_sources")
 builder.add_edge("summarize_sources", "reflect_on_summary")
