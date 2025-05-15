@@ -4,6 +4,66 @@ from datetime import datetime
 def get_current_date():
     return datetime.now().strftime("%B %d, %Y")
 
+translate_texts_instructions = """
+<GOAL>
+Generate a high-quality translation of multiple texts from Danish to English.
+The translation should be accurate, fluent, and maintain the original meaning of the text.
+</GOAL>
+
+<RQUREMENTS>
+- do not add any extra text or explanations
+- do not add any extra line breaks
+- do not add any extra spaces
+- do not add any extra characters
+- do not add any extra punctuation
+- do not add any extra formatting
+- do not add any extra symbols
+- do not add any extra tags
+</RQUREMENTS>
+
+<Task>
+Translate the following text from Danish to English.
+</Task>
+"""
+
+query_writer_instructions_with_tag="""Your goal is to generate a targeted search query in Danish. Used for searching a law database.
+
+<CONTEXT>
+Current date: {current_date}
+Please ensure your queries account for the most current information available as of this date.
+
+The query should be relevant to the legal field and should be able to retrieve information from a law database.
+Query should be in Danish and should be specific enough to yield useful results.
+
+You will be provided with the same research topic in both Danish and English. 
+Use the Danish research topic to generate the query with the correct language understanding, use the English research topic to generate the rationale.
+Use both research topic to generate the query. 
+The query needs to be in Danish.
+</CONTEXT>
+
+<TOPIC>
+In Danish: 
+{research_topic_da}
+In English: 
+{research_topic_en}
+</TOPIC>
+
+<FORMAT>
+Format your response as a JSON object with ALL two of these exact keys:
+   - "query": The actual search query string
+   - "rationale": Brief explanation of why this query is relevant
+</FORMAT>
+
+<EXAMPLE>
+Example output:
+{{ 
+    "query": "machine learning transformer architecture explained",
+    "rationale": "Understanding the fundamental structure of transformer models"
+}}
+</EXAMPLE>
+
+Provide your response in JSON format:"""
+
 query_writer_instructions="""Your goal is to generate a targeted web search query.
 
 <CONTEXT>

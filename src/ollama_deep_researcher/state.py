@@ -4,7 +4,9 @@ from typing_extensions import Annotated
 
 @dataclass(kw_only=True)
 class SummaryState:
-    research_topic: str = field(default=None) # Report topic     
+    research_topic: str = field(default=None) # Report topic
+    research_topic_en: str = field(default=None)
+    research_topic_da: str = field(default=None) 
     search_query: str = field(default=None) # Search query
     web_research_results: Annotated[list, operator.add] = field(default_factory=list) 
     sources_gathered: Annotated[list, operator.add] = field(default_factory=list) 

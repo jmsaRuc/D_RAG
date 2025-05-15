@@ -215,11 +215,16 @@ Instead, visit this link with the correct baseUrl IP address: [`https://smith.la
 
 
 ## misc.
+
+
 ### Running with Docker Compose ollama
 ```bash
 docker compose --env-file .env -f lanchain-docker-compose.yml --project-directory . up --build
 ```
-
+### down 
+```bash
+docker compose --env-file .env -f lanchain-docker-compose.yml --project-directory . down
+```
 ## ollama .env
 ```.env
 LLM_PROVIDER=ollama
