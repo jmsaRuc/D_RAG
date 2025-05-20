@@ -1,0 +1,3 @@
+[submodule "crawl4ai"]
+	path = crawl4ai
+	url = https://github.com/unclecode/crawl4ai.git

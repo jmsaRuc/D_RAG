@@ -14,11 +14,11 @@ from ollama_deep_researcher.utils import (
     deduplicate_and_format_sources,
     tavily_search,
     format_sources,
-    perplexity_search,
-    duckduckgo_search,
-    searxng_search,
     strip_thinking_tokens,
     get_config_value,
+)
+from ollama_deep_researcher.retsinfo_crawl import (
+    retsinfo_search_and_crawl,
 )
 from ollama_deep_researcher.state import (
     SummaryState,
@@ -26,7 +26,6 @@ from ollama_deep_researcher.state import (
     SummaryStateOutput,
 )
 from ollama_deep_researcher.prompts import (
-    query_writer_instructions,
     summarizer_instructions,
     reflection_instructions,
     translate_texts_instructions,
@@ -154,7 +153,7 @@ def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[str, str
     return {"search_query": search_query}
 
 
-def web_research(state: SummaryState, config: RunnableConfig):
+async def web_research(state: SummaryState, config: RunnableConfig):
     """LangGraph node that performs web research using the generated search query.
 
     Executes a web search using the configured search API (tavily, perplexity,
@@ -168,62 +167,15 @@ def web_research(state: SummaryState, config: RunnableConfig):
         Dictionary with state update, including sources_gathered, research_loop_count, and web_research_results
     """
 
-    # Configure
-    configurable = Configuration.from_runnable_config(config)
 
-    # Get the search API
-    search_api = get_config_value(configurable.search_api)
-
-    # Search the web
-    if search_api == "tavily":
-        search_results = tavily_search(
-            state.search_query,
-            fetch_full_page=configurable.fetch_full_page,
-            max_results=1,
-        )
-        search_str = deduplicate_and_format_sources(
-            search_results,
-            max_tokens_per_source=10000,
-            fetch_full_page=configurable.fetch_full_page,
-        )
-    elif search_api == "perplexity":
-        search_results = perplexity_search(
-            state.search_query, state.research_loop_count
-        )
-        search_str = deduplicate_and_format_sources(
-            search_results,
-            max_tokens_per_source=1000,
-            fetch_full_page=configurable.fetch_full_page,
-        )
-    elif search_api == "duckduckgo":
-        search_results = duckduckgo_search(
-            state.search_query,
-            max_results=3,
-            fetch_full_page=configurable.fetch_full_page,
-        )
-        search_str = deduplicate_and_format_sources(
-            search_results,
-            max_tokens_per_source=1000,
-            fetch_full_page=configurable.fetch_full_page,
-        )
-    elif search_api == "searxng":
-        search_results = searxng_search(
-            state.search_query,
-            max_results=3,
-            fetch_full_page=configurable.fetch_full_page,
-        )
-        search_str = deduplicate_and_format_sources(
-            search_results,
-            max_tokens_per_source=1000,
-            fetch_full_page=configurable.fetch_full_page,
-        )
-    else:
-        raise ValueError(f"Unsupported search API: {configurable.search_api}")
+    # Use the configured retsinfo search and crawl
+    search_results = await retsinfo_search_and_crawl(
+        state.search_query,
+        max_results=3,
+    )
 
     return {
-        "sources_gathered": [format_sources(search_results)],
-        "research_loop_count": state.research_loop_count + 1,
-        "web_research_results": [search_str],
+        "search_results": [search_results],
     }
 
 

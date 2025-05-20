@@ -39,11 +39,6 @@ class Configuration(BaseModel):
         title="Search API",
         description="Web search API to use"
     )
-    fetch_full_page: bool = Field(
-        default=True,
-        title="Fetch Full Page",
-        description="Include the full page content in the search results"
-    )
     groq_api_base: str = Field(
         default="https://api.groq.com/",
         title="GROQ API Base URL",

@@ -8,6 +8,7 @@ class SummaryState:
     research_topic_en: str = field(default=None)
     research_topic_da: str = field(default=None) 
     search_query: str = field(default=None) # Search query
+    search_results: Annotated[list, operator.add] = field(default_factory=list)
     web_research_results: Annotated[list, operator.add] = field(default_factory=list) 
     sources_gathered: Annotated[list, operator.add] = field(default_factory=list) 
     research_loop_count: int = field(default=0) # Research loop count
