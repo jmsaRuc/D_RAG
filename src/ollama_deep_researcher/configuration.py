@@ -39,6 +39,11 @@ class Configuration(BaseModel):
         title="Search API",
         description="Web search API to use"
     )
+    crawler_api_base: str = Field(
+        default="http://crawl4ai:11235",
+        title="Crawler API Base URL",
+        description="Base URL for the web crawler API"
+    )
     groq_api_base: str = Field(
         default="https://api.groq.com/",
         title="GROQ API Base URL",

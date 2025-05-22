@@ -166,12 +166,13 @@ async def web_research(state: SummaryState, config: RunnableConfig):
     Returns:
         Dictionary with state update, including sources_gathered, research_loop_count, and web_research_results
     """
-
+    configurable = Configuration.from_runnable_config(config)
 
     # Use the configured retsinfo search and crawl
     search_results = await retsinfo_search_and_crawl(
-        state.search_query,
-        max_results=3,
+        query=state.search_query,
+        crawler_base_url=configurable.crawler_api_base,
+        max_results=1,
     )
 
     return {

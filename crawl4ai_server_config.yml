@@ -5,8 +5,8 @@ app:
   host: "0.0.0.0"
   port: 11234
   reload: False
-  workers: 1
-  timeout_keep_alive: 300
+  workers: 4
+  timeout_keep_alive: 1800 
 
 # Default LLM Configuration
 llm:
@@ -33,13 +33,13 @@ redis:
 # Rate Limiting Configuration
 rate_limiting:
   enabled: True
-  default_limit: "1000/minute"
+  default_limit: "10000/minute"
   trusted_proxies: []
-  storage_uri: "memory://"  # Use "redis://localhost:6379" for production
+  storage_uri: "redis://localhost:6379"  # Use "redis://localhost:6379" for production
 
 # Security Configuration
 security:
-  enabled: false 
+  enabled: false
   jwt_enabled: false 
   https_redirect: false
   trusted_hosts: ["*"]
@@ -54,10 +54,11 @@ crawler:
   base_config:
     simulate_user: false
   check_interval: 1.0
-  max_sessions_permit: 40
+  max_sessions_permit: 100
   memory_threshold_percent: 95.0
   rate_limiter:
-      base_delay: [0.5, 2] # Min/max delay between requests in seconds for dispatcher
+      enabled: true
+      base_delay: [1.0, 2.0] # Min/max delay between requests in seconds for dispatcher
       max_delay: 10.0 # Max delay between requests in seconds for dispatcher
       max_retries: 3 # Max retries for failed requests
       rate_limit_codes: [429, 503] # HTTP status codes to trigger rate limiting
@@ -65,7 +66,7 @@ crawler:
     stream_init: 30.0  # Timeout for stream initialization
     batch_process: 300.0  # Timeout for batch processing
   pool:
-    max_pages: 100                         # ← GLOBAL_SEM permits
+    max_pages: 40                    # ← GLOBAL_SEM permits
     idle_ttl_sec: 1800                     # ← 30 min janitor cutoff
   browser:
     kwargs:

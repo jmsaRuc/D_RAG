@@ -5062,4 +5062,4 @@ dev = ["mypy", "ruff"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "2476e50f5cef48113644bead37a1cab5cf466e892e09a6e47efb89480ed49616"
+content-hash = "035e048f0b3bbc57e78e9be6fcb11fbb21f88c08e527c8afac862747275853a4"

@@ -1,24 +1,23 @@
 from crawl4ai.content_filter_strategy import PruningContentFilter
 from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
 from crawl4ai import (
-    AsyncWebCrawler,
-    BrowserConfig,
     CrawlerRunConfig,
     CacheMode,
-    RateLimiter,
 )
 from crawl4ai.models import CrawlResultContainer
-from crawl4ai.async_dispatcher import MemoryAdaptiveDispatcher
+from crawl4ai.docker_client import Crawl4aiDockerClient
 import time
 
 from typing import Dict, Any, List
 import asyncio
 import httpx
-import gc
 import collections.abc
-from langsmith import traceable
-##_________________________________________search and link/metada grapper_______________________________________________
 
+## asing the base url for the crawler
+base_url: str 
+
+
+##_________________________________________search and link/metada grapper_______________________________________________
 
 async def retsinfo_query_search(query: str, max_results: int) -> List[Dict[str, Any]]:
     """
@@ -32,7 +31,6 @@ async def retsinfo_query_search(query: str, max_results: int) -> List[Dict[str, 
         List[Dict[str, Any]]: A list of document dictionaries returned by the API.
                               Returns an empty list if an HTTP error occurs.
     """
-    gc.collect()
     # Check if max_results is greater than 10
     # If so, set results_per_page to 10, otherwise set it to max_results
     # Parameters used for the API request
@@ -72,7 +70,6 @@ async def retsinfo_get_related_documents(document_id: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: A dictionary containing related document references.
     """
-    gc.collect()
     try:
         # Create an asynchronous HTTP client
         async with httpx.AsyncClient() as client:
@@ -102,7 +99,6 @@ async def get_related(search_result: Dict[str, Any]) -> Dict[str, Any]:
         Dict[str, Any]: A dictionary that includes the document's id, title, popularTitle,
                         shortName, documentType, retsinfoLink, and its related documents.
     """
-    gc.collect()
 
     # fetch related documents using the retsinfo_get_related_documents function
     reletad_documents = await retsinfo_get_related_documents(search_result["id"])
@@ -137,7 +133,6 @@ async def retsinfo_search(
                                           and their related documents. Returns an empty
                                           list if an error occurs.
     """
-    gc.collect()
     try:
         results = []
         ## get the search main law results
@@ -165,7 +160,6 @@ async def retsinfo_search(
 async def clean_content_crawlr(
     id_url_pair: Dict[int, str],
 ) -> Dict[str, CrawlResultContainer]:
-    gc.collect()
     """
     Crawl the site from url,
     then clean the content of the provided URL using an asynchronous web crawler and convert it to markdown.
@@ -177,9 +171,6 @@ async def clean_content_crawlr(
         Dict[str, CrawlResultContainer]: The cleaned markdown content extracted from the webpage.
     """
     urls = list(id_url_pair.values())
-
-    # Create browser configuration
-    browser_config = BrowserConfig(browser_type="chromium", headless=True)
 
     # Create crawler run configuration
     crawler_config = CrawlerRunConfig(
@@ -195,29 +186,18 @@ async def clean_content_crawlr(
             ),
             options={"ignore_links": True, "citations": True},
         ),
-    )
-
-    # Create a dispatcher
-    dispatcher = MemoryAdaptiveDispatcher(
-        memory_threshold_percent=90.0,
-        check_interval=1.0,
-        max_session_permit=40,
-        rate_limiter=RateLimiter(
-            base_delay=(0.5, 2),
-            max_delay=10.0,
-            max_retries=3,
-            rate_limit_codes=[429, 503],
-        ),
+        magic=True,
     )
 
     # enitialize the crawler
-    crawler = AsyncWebCrawler(config=browser_config)
+    client = Crawl4aiDockerClient(base_url=base_url, verbose=False, timeout=120)
 
+    await client.authenticate("user@example.com")
+    
     # Start the crawler
-    results = await crawler.arun_many(
+    results = await client.crawl(
         urls=urls,
-        config=crawler_config,
-        dispatcher=dispatcher,
+        crawler_config=crawler_config,
     )
 
     return results
@@ -237,7 +217,6 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
         Dict[int, CrawlResultContainer]: A dictionary mapping unique IDs to their crawl results,
         where each result contains the cleaned content or error details.
     """
-    gc.collect()
 
     end_results = {}
 
@@ -245,30 +224,41 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
     crawl_results = await clean_content_crawlr(id_url_pair_v)
 
     # Iterate through the crawl results and map them back to their corresponding IDs
-    for result in crawl_results:
-        if result.success:
-            for id, url in id_url_pair_v.items():
-                if result.url == url:
-                    end_results[id] = result
-                    break
-        else:
-            print("Failed:", result.url, "-")
-            print(f"   Id: {id}")
-            print(f"   URL: {result.url}")
-            print(f"   URL Macthing Id: {id_url_pair_v[id]}")
-            end_results[id] = result
+    try: 
+        for result in crawl_results:
+            if result.success:
+                for id, url in id_url_pair_v.items():
+                    if result.url == url:
+                        end_results[id] = result
+                        break
+            else:
+                end_results[id] = result
+                raise ValueError(
+                    f"Failed to crawl URL: {result.url} - {result.error}",
+                    f"Id: {id}",
+                    f"URL: {result.url}",
+                    f"URL Macthing Id: {id_url_pair_v[id]}",
+                    f"Crawl4Ai Error: {result.error}",
+                )
+    except ValueError as e:
+        print(f"Error: {str(e)}")
 
     # Check if the ID-URL pairs match the crawl results
-    for id, result in end_results.items():
-        if id_url_pair_v[id] == result.url:
-            print(result.url, "crawled OK!")
-        elif id_url_pair_v[id] != result.url:
-            print("Failed:", "-", "Wrong Id Url pair")
-            print(f"   Id: {id}")
-            print(f"   URL: {result.url}")
-            print(f"   URL Macthing Id: {id_url_pair_v[id]}")
-        else:
-            print("Failed:", result.url, "-")
+    try:
+        for id, result in end_results.items():
+            if id_url_pair_v[id] == result.url:
+                print(result.url, "crawled OK!")
+            elif id_url_pair_v[id] != result.url:
+                raise ValueError(
+                    f"ID-URL pair mismatch: {id} - {id_url_pair_v[id]} != {result.url}",
+                    f"Id: {id}",
+                    f"URL: {id_url_pair_v[id]}",
+                    f"URL Macthing Id: {id_url_pair_v[id]}"
+                )     
+            else:
+                raise KeyError
+    except ValueError as e:
+        print(f"Error: {str(e)}")
 
     return end_results
 
@@ -292,8 +282,10 @@ async def extract_ids(data: Dict[str, Any]) -> Dict[str, str]:
             # Construct the URL using the retsinfoLink
             results[data["id"]] = data["retsinfoLink"]
         elif "id" in data and "eliPath" in data:
-            # Construct the URL using the eliPath
-            results[data["id"]] = f"https://www.retsinformation.dk{data["eliPath"]}"
+            # Check if the document is not historical
+            if data["isHistorical"] == False:
+                # Construct the URL using the eliPath
+                results[data["id"]] = f"https://www.retsinformation.dk{data["eliPath"]}"
         for v in data.values():
             # Recursively extract IDs from nested dictionaries
             results.update(await extract_ids(v))
@@ -366,30 +358,31 @@ async def sort_after_crawl(
         # Check if the search result contains an ID and an eliPath
         # If so, extract relevant information and store it in the results dictionary
         elif "id" in search_result and "eliPath" in search_result:
-            results[state_id] = {}
-            results[state_id]["suplementary_content"] = {}
-            results[state_id]["suplementary_content"][search_result["id"]] = {}
-            results[state_id]["suplementary_content"][search_result["id"]]["title"] = (
-                search_result["title"]
-            )
-            results[state_id]["suplementary_content"][search_result["id"]][
-                "popularTitle"
-            ] = search_result.get("popularTitle")
-            results[state_id]["suplementary_content"][search_result["id"]][
-                "shortName"
-            ] = search_result.get("shortName")
-            results[state_id]["suplementary_content"][search_result["id"]][
-                "documentType"
-            ] = state_header
-            results[state_id]["suplementary_content"][search_result["id"]][
-                "url"
-            ] = f"https://www.retsinformation.dk{search_result["eliPath"]}"
-            results[state_id]["suplementary_content"][search_result["id"]][
-                "releaseDate"
-            ] = search_result["offentliggoerelsesDato"]
-            results[state_id]["suplementary_content"][search_result["id"]][
-                "content"
-            ] = crawl_results[search_result["id"]].markdown.fit_markdown
+            if search_result["isHistorical"] == False:
+                results[state_id] = {}
+                results[state_id]["suplementary_content"] = {}
+                results[state_id]["suplementary_content"][search_result["id"]] = {}
+                results[state_id]["suplementary_content"][search_result["id"]]["title"] = (
+                    search_result["title"]
+                )
+                results[state_id]["suplementary_content"][search_result["id"]][
+                    "popularTitle"
+                ] = search_result.get("popularTitle")
+                results[state_id]["suplementary_content"][search_result["id"]][
+                    "shortName"
+                ] = search_result.get("shortName")
+                results[state_id]["suplementary_content"][search_result["id"]][
+                    "documentType"
+                ] = state_header
+                results[state_id]["suplementary_content"][search_result["id"]][
+                    "url"
+                ] = f"https://www.retsinformation.dk{search_result["eliPath"]}"
+                results[state_id]["suplementary_content"][search_result["id"]][
+                    "releaseDate"
+                ] = search_result["offentliggoerelsesDato"]
+                results[state_id]["suplementary_content"][search_result["id"]][
+                    "content"
+                ] = crawl_results[search_result["id"]].markdown.fit_markdown
         # Recursively process nested dictionaries or lists
         for v in search_result.values():
             # Update the results dictionary with the processed data
@@ -420,7 +413,6 @@ async def format_sorted_results(
     Returns:
         list[Dict[str, Any]]: A dictionary containing the formatted results.
     """
-    gc.collect()
     formated_results_v = []
     # format the results the sorted_results_v into a list of dictionaries
     formated_results_v = list(sorted_results_v.values())
@@ -438,8 +430,7 @@ async def format_sorted_results(
 
 ##________________________________________________main function_______________________________________________
 
-@traceable
-async def retsinfo_search_and_crawl(query: str, max_results: int) -> Dict[str, Any]:
+async def retsinfo_search_and_crawl(query: str, crawler_base_url: str, max_results: int) -> Dict[str, Any]:
     """
     Asynchronously performs a search and crawl operation on Retsinfo data.
     This function executes a series of asynchronous tasks to search for data
@@ -457,7 +448,11 @@ async def retsinfo_search_and_crawl(query: str, max_results: int) -> Dict[str, A
     Raises:
         Any exceptions raised by the underlying asynchronous functions.
     """
-    gc.collect()
+    
+    # get the crawler base url from the configuration
+    global base_url
+    base_url = crawler_base_url
+    
     # Start the timer
     t0 = time.time()
     # Perform the search operation
