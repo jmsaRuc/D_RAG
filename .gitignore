@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# langgraph_api
+.langgraph_api
+
 # Distribution / packaging
 .Python
 build/
@@ -31,6 +34,9 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+
+# docer test
+test.Dockerfile
 
 # Installer logs
 pip-log.txt
@@ -136,6 +142,7 @@ ENV/
 env.bak/
 venv.bak/
 groq.env
+
 
 # Spyder project settings
 .spyderproject

@@ -34,16 +34,6 @@ class Configuration(BaseModel):
         title="LLM Provider",
         description="Provider for the LLM (Ollama or LMStudio)"
     )
-    search_api: Literal["perplexity", "tavily", "duckduckgo", "searxng"] = Field(
-        default="duckduckgo",
-        title="Search API",
-        description="Web search API to use"
-    )
-    fetch_full_page: bool = Field(
-        default=True,
-        title="Fetch Full Page",
-        description="Include the full page content in the search results"
-    )
     groq_api_base: str = Field(
         default="https://api.groq.com/",
         title="GROQ API Base URL",
@@ -53,11 +43,6 @@ class Configuration(BaseModel):
         default="http://localhost:11434/",
         title="Ollama Base URL",
         description="Base URL for Ollama API"
-    )
-    lmstudio_base_url: str = Field(
-        default="http://localhost:1234/v1",
-        title="LMStudio Base URL",
-        description="Base URL for LMStudio OpenAI-compatible API"
     )
     strip_thinking_tokens: bool = Field(
         default=True,
