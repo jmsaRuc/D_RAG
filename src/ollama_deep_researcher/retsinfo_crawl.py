@@ -249,9 +249,10 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
             else:
                 raise ValueError(
                     f"Failed to crawl URL: {result.url}",
-                    f"Id: {id}",
-                    f"URL: {result.url}",
-                    f"URL Macthing Id: {id_url_pair_v[id]}",
+                    f"Response Header: {result.response_headers}",
+                    f"Status Code: {result.status_code}",
+                    f"Full Error message:",
+                    f"{result.error_message}"
                 )
     except ValueError as e:
         print(f"Error: {str(e)}")

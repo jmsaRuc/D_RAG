@@ -1,7 +1,7 @@
 import json
 
 from typing_extensions import Literal, Optional
-from typing import Dict
+from typing import Dict, List, Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
@@ -13,6 +13,10 @@ from ollama_deep_researcher.configuration import Configuration, SearchAPI
 from ollama_deep_researcher.utils import (
     strip_thinking_tokens,
     get_config_value,
+    deduplicate_translate_and_format_sources,
+    translate_content_async,
+    format_sources
+    
 )
 from ollama_deep_researcher.retsinfo_crawl import (
     retsinfo_search_and_crawl,
@@ -32,7 +36,7 @@ from ollama_deep_researcher.prompts import (
 
 
 # Nodes
-def translate_research_topic(
+async def translate_research_topic(
     state: SummaryState, config: RunnableConfig
 ) -> Dict[str, str]:
     """
@@ -58,6 +62,7 @@ def translate_research_topic(
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=12000,
+            service_tier="auto"
         )
     else:  # Default to Ollama
         llm_translate_q = ChatOllama(
@@ -66,7 +71,7 @@ def translate_research_topic(
             num_predict=12000,
         )
 
-    result = llm_translate_q.invoke(
+    result = await llm_translate_q.ainvoke(
         [
             SystemMessage(content=translate_texts_instructions),
             HumanMessage(content=human_message_content),
@@ -75,7 +80,7 @@ def translate_research_topic(
 
     # Strip thinking tokens
     if configurable.strip_thinking_tokens:
-        translated_research_topic = strip_thinking_tokens(result.content)
+        translated_research_topic = await strip_thinking_tokens(result.content)
 
     return {
         "research_topic_en": state.research_topic,
@@ -83,7 +88,7 @@ def translate_research_topic(
     }
 
 
-def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[str, str]:
+async def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[str, str]:
     """LangGraph node that generates a search query based on the research topic.
 
     Uses an LLM to create an optimized search query for web research based on
@@ -94,11 +99,11 @@ def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[str, str
         config: Configuration for the runnable, including LLM provider settings
 
     Returns:
-        Dictionary with state update, including search_query key containing the generated query
+        Dictionary with state update, including search_query_en key containing the generated query
     """
 
     # Format the prompt
-    current_date = get_current_date()
+    current_date = await get_current_date()
     formatted_prompt = query_writer_instructions_with_tag.format(
         current_date=current_date,
         research_topic_da=state.research_topic_da,
@@ -114,6 +119,7 @@ def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[str, str
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=12000,
+            service_tier="auto",
             response_format={"type": "json_object"},
         )
     else:  # Default to Ollama
@@ -125,7 +131,7 @@ def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[str, str
             format="json",
         )
     # Generate a query
-    result = llm_json_mode.invoke(
+    result = await llm_json_mode.ainvoke(
         [
             SystemMessage(content=formatted_prompt),
             HumanMessage(
@@ -140,39 +146,62 @@ def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[str, str
     # Parse the JSON response and get the query
     try:
         query = json.loads(content)
-        search_query = query["query"]
+        search_query_en = query["query"]
     except (json.JSONDecodeError, KeyError):
         # If parsing fails or the key is not found, use a fallback query
         if configurable.strip_thinking_tokens:
-            content = strip_thinking_tokens(content)
-        search_query = content
-    return {"search_query": search_query}
+            content = await strip_thinking_tokens(content)
+        search_query_en = content
+    return {"search_query_en": search_query_en}
 
 
-async def web_research(state: SummaryState, config: RunnableConfig):
+async def web_research(state: SummaryState) -> Dict[str, List[Dict[str, Any]]]:
     """LangGraph node that performs web research using the generated search query.
 
-    Executes a web search using the configured search API (tavily, perplexity,
-    duckduckgo, or searxng) and formats the results for further processing.
-
-    Args:
-        state: Current graph state containing the search query and research loop count
-        config: Configuration for the runnable, including search API settings
-
+       Perform web research by executing a search and crawl using the 'retsinfo' service.
+    Parameters:
+        state (SummaryState): An object containing the search query and related state.
     Returns:
-        Dictionary with state update, including sources_gathered, research_loop_count, and web_research_results
+        Dict[str, list[Dict[str, Any]]]: A dictionary with the key 'search_results_en' mapping to a list containing the search results.
     """
 
     # Use the configured retsinfo search and crawl
-    search_results = await retsinfo_search_and_crawl(
-        query=state.search_query,
+    search_results_da = await retsinfo_search_and_crawl(
+        query=state.search_query_en,
         max_results=3,
     )
 
     return {
-        "search_results": [search_results],
+        "search_results_da": search_results_da,
     }
 
+
+async def translate_search_results(state: SummaryState, config: RunnableConfig) -> Dict[str, List[Any]]:
+    
+    search_results_da = state.search_results_da
+    configurable = Configuration.from_runnable_config(config)
+    
+    if configurable.llm_provider == "groq":
+        llm_translate_s = ChatGroq(
+            model=configurable.groq_llm,
+            temperature=0,
+            max_tokens=34000,
+            service_tier="auto"
+        )
+    else:  # Default to Ollama
+        llm_translate_s = ChatOllama(
+            model=configurable.local_llm,
+            temperature=0,
+            num_predict=34000,
+        )
+    
+    search_str_en, saved_first_de = await deduplicate_translate_and_format_sources(search_results_da, llm_translate_s)
+    
+    return {
+        "sources_gathered": [await format_sources(search_results_da)],
+        "web_research_results_en": [search_str_en],
+        "saved_frist_result_de": [saved_first_de]
+    }
 
 def summarize_sources(state: SummaryState, config: RunnableConfig):
     """LangGraph node that summarizes web research results.
@@ -213,7 +242,12 @@ def summarize_sources(state: SummaryState, config: RunnableConfig):
 
     # Choose the appropriate LLM based on the provider
     if configurable.llm_provider == "groq":
-        llm = ChatGroq(model=configurable.groq_llm, temperature=0, max_tokens=131072)
+        llm = ChatGroq(
+            model=configurable.groq_llm,
+            temperature=0,
+            max_tokens=131072,
+            service_tier="auto",
+        )
     else:  # Default to Ollama
         llm = ChatOllama(
             base_url=configurable.ollama_base_url,
@@ -366,6 +400,7 @@ builder = StateGraph(
 builder.add_node("translate_research_topic", translate_research_topic)
 builder.add_node("generate_query", generate_query)
 builder.add_node("web_research", web_research)
+builder.add_node("translate_search_results", translate_search_results)
 builder.add_node("summarize_sources", summarize_sources)
 builder.add_node("reflect_on_summary", reflect_on_summary)
 builder.add_node("finalize_summary", finalize_summary)
@@ -374,7 +409,8 @@ builder.add_node("finalize_summary", finalize_summary)
 builder.add_edge(START, "translate_research_topic")
 builder.add_edge("translate_research_topic", "generate_query")
 builder.add_edge("generate_query", "web_research")
-builder.add_edge("web_research", "summarize_sources")
+builder.add_edge("web_research", "translate_search_results")
+builder.add_edge("translate_search_results", "summarize_sources")
 builder.add_edge("summarize_sources", "reflect_on_summary")
 builder.add_conditional_edges("reflect_on_summary", route_research)
 builder.add_edge("finalize_summary", END)

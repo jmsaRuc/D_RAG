@@ -1,7 +1,7 @@
 from datetime import datetime
 
 # Get current date in a readable format
-def get_current_date():
+async def get_current_date():
     return datetime.now().strftime("%B %d, %Y")
 
 translate_texts_instructions = """
@@ -22,7 +22,7 @@ The translation should be accurate, fluent, and maintain the original meaning of
 </RQUREMENTS>
 
 <Task>
-Translate the following text from Danish to English.
+Translate the following texts from Danish to English.
 </Task>
 """
 
@@ -57,33 +57,6 @@ Format your response as a JSON object with ALL two of these exact keys:
 <EXAMPLE>
 Example output:
 {{ 
-    "query": "machine learning transformer architecture explained",
-    "rationale": "Understanding the fundamental structure of transformer models"
-}}
-</EXAMPLE>
-
-Provide your response in JSON format:"""
-
-query_writer_instructions="""Your goal is to generate a targeted web search query.
-
-<CONTEXT>
-Current date: {current_date}
-Please ensure your queries account for the most current information available as of this date.
-</CONTEXT>
-
-<TOPIC>
-{research_topic}
-</TOPIC>
-
-<FORMAT>
-Format your response as a JSON object with ALL three of these exact keys:
-   - "query": The actual search query string
-   - "rationale": Brief explanation of why this query is relevant
-</FORMAT>
-
-<EXAMPLE>
-Example output:
-{{
     "query": "machine learning transformer architecture explained",
     "rationale": "Understanding the fundamental structure of transformer models"
 }}
