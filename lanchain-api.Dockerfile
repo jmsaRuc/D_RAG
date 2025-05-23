@@ -1,58 +1,82 @@
-FROM --platform=$BUILDPLATFORM python:3.12-slim-bullseye AS prod
+FROM --platform=$BUILDPLATFORM python:3.12-slim-bookworm AS prod
 
-WORKDIR /app
+
+ARG APP_HOME=/app
+
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    build-essential \
-    python3-dev \
-    libssl-dev \
-    libffi-dev \
-    rustc \
-    cargo \
-    && rm -rf /var/lib/apt/lists/*
+build-essential \
+curl \
+wget \
+gnupg \
+git \
+cmake \
+pkg-config \
+python3-dev \
+libjpeg-dev \
+&& apt-get clean \ 
+&& rm -rf /var/lib/apt/lists/*
 
-# Install uv package manager (use pip for safer cross-arch install)
-#RUN pip install --no-cache-dir --upgrade pip
-#RUN pip install uv
-#ENV PATH="/root/.local/bin:${PATH}"
 
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip install poetry==2.1.1
+RUN apt-get update && apt-get dist-upgrade -y \
+&& rm -rf /var/lib/apt/lists/*
 
-# Configuring poetry
-RUN poetry config virtualenvs.create false
-RUN poetry config cache-dir /tmp/poetry_cache
+# Create a non-root user and group
+RUN groupadd -r appuser && useradd --no-log-init -r -g appuser appuser
 
-# Copying requirements of a project
+RUN mkdir -p /home/appuser && chown -R appuser:appuser /home/appuser 
+
+
+# --- Install Poetry ---
+ARG POETRY_VERSION=2.1.1
+ENV POETRY_VIRTUALENVS_IN_PROJECT=false
+ENV POETRY_VIRTUALENVS_CREATE=true
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV POETRY_VIRTUALENVS_OPTIONS_SYSTEM_SITE_PACKAGES=ture
+ENV POETRY_CACHE_DIR=/home/appuser/.cache/pypoetry
+ENV POETRY_HOME=/home/appuser/.local/share/pypoetry
+ENV POETRY_VIRTUALENVS_PATH=/home/appuser/.cache/pypoetry/virtualenvs
+ENV PYTHONUNBUFFERED=1
+
+RUN pip install "poetry==${POETRY_VERSION}"
+
+WORKDIR ${APP_HOME}
+
+# 1) Install dependencies
 COPY pyproject.toml poetry.lock /app/
-
-WORKDIR /app
-
-# Installing requirements
-RUN --mount=type=cache,target=/tmp/poetry_cache poetry install --no-root --only main
+RUN poetry install --no-root
 
 # 2) Copy the repository content
-COPY . /app
-RUN --mount=type=cache,target=/tmp/poetry_cache poetry install --only main
+COPY . ${APP_HOME}/
 
-# 3) Provide default environment variables to point to Ollama (running elsewhere)
-#    Adjust the OLLAMA_URL to match your actual Ollama container or service.
+# 3) Install the package
+RUN poetry install
 
-# 4) Expose the port that LangGraph dev server uses (default: 2024)
+# 4) Install crawl4ai and playwright
+RUN poetry run crawl4ai-setup
+RUN poetry run playwright install --with-deps chromium
 
-# 5) Launch the assistant with the LangGraph dev server:
-#    Equivalent to the quickstart: uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.11 langgraph dev
-CMD ["uvx", \
-     "--refresh", \
-     "--from", "langgraph-cli[inmem]", \
-     "--with-editable", ".", \
-     "--python", "3.12", \
+# 5) Copy the playwright cache to the non-root user
+RUN mkdir -p /home/appuser/.cache/ms-playwright \
+    && cp -r /root/.cache/ms-playwright/chromium-* /home/appuser/.cache/ms-playwright/ \
+    && chown -R appuser:appuser /home/appuser/.cache/ms-playwright
+
+# 6) Set permissions for the app directory
+RUN chown -R appuser:appuser ${APP_HOME} \
+    && chown -R appuser:appuser /home/appuser/
+
+# 7) Set the user to the non-root user
+USER appuser
+
+# 8) Test crawl4ai
+RUN poetry run crawl4ai-doctor
+
+EXPOSE 2024
+
+# 9) run the app
+
+CMD ["poetry", "run",\
      "langgraph", \
      "dev", \
+     "--allow-blocking",\
      "--host", "0.0.0.0"]
-
-FROM prod AS dev
-
-RUN --mount=type=cache,target=/tmp/poetry_cache poetry install

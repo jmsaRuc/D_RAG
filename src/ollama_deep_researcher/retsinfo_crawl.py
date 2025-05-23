@@ -1,20 +1,21 @@
 from crawl4ai.content_filter_strategy import PruningContentFilter
 from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
 from crawl4ai import (
+    AsyncWebCrawler,
     CrawlerRunConfig,
     CacheMode,
+    BrowserConfig,
+    RateLimiter
 )
 from crawl4ai.models import CrawlResultContainer
-from crawl4ai.docker_client import Crawl4aiDockerClient
+from crawl4ai.async_dispatcher import MemoryAdaptiveDispatcher
+from langsmith import traceable
 import time
 
 from typing import Dict, Any, List
 import asyncio
 import httpx
 import collections.abc
-
-## asing the base url for the crawler
-base_url: str 
 
 
 ##_________________________________________search and link/metada grapper_______________________________________________
@@ -171,7 +172,10 @@ async def clean_content_crawlr(
         Dict[str, CrawlResultContainer]: The cleaned markdown content extracted from the webpage.
     """
     urls = list(id_url_pair.values())
-
+    
+    # create the browser configuration
+    browser_config = BrowserConfig(browser_type="chromium", headless=True)
+    
     # Create crawler run configuration
     crawler_config = CrawlerRunConfig(
         cache_mode=CacheMode.BYPASS,
@@ -188,16 +192,27 @@ async def clean_content_crawlr(
         ),
         magic=True,
     )
+    
+    dispatcher = MemoryAdaptiveDispatcher(
+        memory_threshold_percent=90.0,
+        check_interval=1.0,
+        max_session_permit=40,
+        rate_limiter=RateLimiter(
+            base_delay=(0.5, 2),
+            max_delay=10.0,
+            max_retries=3,
+            rate_limit_codes=[429, 503],
+        ),
+    )
 
     # enitialize the crawler
-    client = Crawl4aiDockerClient(base_url=base_url, verbose=False, timeout=120)
-
-    await client.authenticate("user@example.com")
+    crawler = AsyncWebCrawler(config=browser_config)
     
     # Start the crawler
-    results = await client.crawl(
+    results = await crawler.arun_many(
         urls=urls,
-        crawler_config=crawler_config,
+        config=crawler_config,
+        dispatcher=dispatcher,
     )
 
     return results
@@ -232,13 +247,11 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
                         end_results[id] = result
                         break
             else:
-                end_results[id] = result
                 raise ValueError(
-                    f"Failed to crawl URL: {result.url} - {result.error}",
+                    f"Failed to crawl URL: {result.url}",
                     f"Id: {id}",
                     f"URL: {result.url}",
                     f"URL Macthing Id: {id_url_pair_v[id]}",
-                    f"Crawl4Ai Error: {result.error}",
                 )
     except ValueError as e:
         print(f"Error: {str(e)}")
@@ -430,7 +443,8 @@ async def format_sorted_results(
 
 ##________________________________________________main function_______________________________________________
 
-async def retsinfo_search_and_crawl(query: str, crawler_base_url: str, max_results: int) -> Dict[str, Any]:
+@traceable
+async def retsinfo_search_and_crawl(query: str, max_results: int) -> Dict[str, Any]:
     """
     Asynchronously performs a search and crawl operation on Retsinfo data.
     This function executes a series of asynchronous tasks to search for data
@@ -448,10 +462,6 @@ async def retsinfo_search_and_crawl(query: str, crawler_base_url: str, max_resul
     Raises:
         Any exceptions raised by the underlying asynchronous functions.
     """
-    
-    # get the crawler base url from the configuration
-    global base_url
-    base_url = crawler_base_url
     
     # Start the timer
     t0 = time.time()

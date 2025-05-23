@@ -11,9 +11,6 @@ from langgraph.graph import START, END, StateGraph
 
 from ollama_deep_researcher.configuration import Configuration, SearchAPI
 from ollama_deep_researcher.utils import (
-    deduplicate_and_format_sources,
-    tavily_search,
-    format_sources,
     strip_thinking_tokens,
     get_config_value,
 )
@@ -32,7 +29,6 @@ from ollama_deep_researcher.prompts import (
     query_writer_instructions_with_tag,
     get_current_date,
 )
-from ollama_deep_researcher.lmstudio import ChatLMStudio
 
 
 # Nodes
@@ -166,13 +162,11 @@ async def web_research(state: SummaryState, config: RunnableConfig):
     Returns:
         Dictionary with state update, including sources_gathered, research_loop_count, and web_research_results
     """
-    configurable = Configuration.from_runnable_config(config)
 
     # Use the configured retsinfo search and crawl
     search_results = await retsinfo_search_and_crawl(
         query=state.search_query,
-        crawler_base_url=configurable.crawler_api_base,
-        max_results=1,
+        max_results=3,
     )
 
     return {
@@ -218,12 +212,6 @@ def summarize_sources(state: SummaryState, config: RunnableConfig):
     configurable = Configuration.from_runnable_config(config)
 
     # Choose the appropriate LLM based on the provider
-    if configurable.llm_provider == "lmstudio":
-        llm = ChatLMStudio(
-            base_url=configurable.lmstudio_base_url,
-            model=configurable.local_llm,
-            temperature=0,
-        )
     if configurable.llm_provider == "groq":
         llm = ChatGroq(model=configurable.groq_llm, temperature=0, max_tokens=131072)
     else:  # Default to Ollama
@@ -267,13 +255,6 @@ def reflect_on_summary(state: SummaryState, config: RunnableConfig):
     configurable = Configuration.from_runnable_config(config)
 
     # Choose the appropriate LLM based on the provider
-    if configurable.llm_provider == "lmstudio":
-        llm_json_mode = ChatLMStudio(
-            base_url=configurable.lmstudio_base_url,
-            model=configurable.local_llm,
-            temperature=0,
-            format="json",
-        )
     if configurable.llm_provider == "groq":
         llm_json_mode = ChatGroq(
             model=configurable.groq_llm,
