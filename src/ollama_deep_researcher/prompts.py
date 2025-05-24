@@ -67,12 +67,15 @@ Provide your response in JSON format:"""
 summarizer_instructions="""
 <GOAL>
 Generate a high-quality summary of the provided context.
+Ensure citation, use chapter, paragraph, and clause (§=paragraph, stk.=clause).
 </GOAL>
 
 <REQUIREMENTS>
 When creating a NEW summary:
 1. Highlight the most relevant information related to the user topic from the search results
-2. Ensure a coherent flow of information
+3. Ensure a coherent flow of information
+4. Ensure citation, use chapter, paragraph, and clause (§=paragraph, stk.=clause)
+5. When using Suplementary Sources in the summary, include the title of the Suplementary Sources in the citation 
 
 When EXTENDING an existing summary:                                                                                                                 
 1. Read the existing summary and new search results carefully.                                                    
@@ -82,15 +85,17 @@ When EXTENDING an existing summary:
     b. If it's entirely new but relevant, add a new paragraph with a smooth transition.                            
     c. If it's not relevant to the user topic, skip it.                                                            
 4. Ensure all additions are relevant to the user's topic.                                                         
-5. Verify that your final output differs from the input summary.                                                                                                                                                            
-< /REQUIREMENTS >
+5. Verify that your final output differs from the input summary.
+6. Ensure citation, use chapter, paragraph, and clause (§=paragraph, stk.=clause)
+7. When using Suplementary Sources in the summary, include the title of the Suplementary Sources in the citation
+<REQUIREMENTS>
 
 < FORMATTING >
 - Start directly with the updated summary, without preamble or titles. Do not use XML tags in the output.  
 < /FORMATTING >
 
 <Task>
-Think carefully about the provided Context first. Then generate a summary of the context to address the User Input.
+Think carefully about the provided Context first. Then generate a summary of the context to address the User Input. Ensure citation, use chapter, paragraph, clause, and titles of the Suplementary Sources.
 </Task>
 """
 

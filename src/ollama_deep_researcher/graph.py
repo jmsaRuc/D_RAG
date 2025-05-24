@@ -82,8 +82,8 @@ async def translate_research_topic(
         translated_research_topic = await strip_thinking_tokens(result.content)
 
     return {
-        "research_topic_en": state.research_topic,
-        "research_topic_da": translated_research_topic,
+        "research_topic_da": state.research_topic,
+        "research_topic_en": translated_research_topic,
     }
 
 
@@ -202,7 +202,7 @@ async def translate_search_results(state: SummaryState, config: RunnableConfig) 
         "saved_frist_result_de": [saved_first_de]
     }
 
-def summarize_sources(state: SummaryState, config: RunnableConfig):
+async def summarize_sources(state: SummaryState, config: RunnableConfig):
     """LangGraph node that summarizes web research results.
 
     Uses an LLM to create or update a running summary based on the newest web research
@@ -214,26 +214,26 @@ def summarize_sources(state: SummaryState, config: RunnableConfig):
         config: Configuration for the runnable, including LLM provider settings
 
     Returns:
-        Dictionary with state update, including running_summary key containing the updated summary
+        Dictionary with state update, including running_summary_en key containing the updated summary
     """
 
     # Existing summary
-    existing_summary = state.running_summary
+    existing_summary = state.running_summary_en
 
     # Most recent web research
-    most_recent_web_research = state.web_research_results[-1]
+    most_recent_web_research = state.web_research_results_en[-1]
 
     # Build the human message
     if existing_summary:
         human_message_content = (
             f"<Existing Summary> \n {existing_summary} \n <Existing Summary>\n\n"
             f"<New Context> \n {most_recent_web_research} \n <New Context>"
-            f"Update the Existing Summary with the New Context on this topic: \n <User Input> \n {state.research_topic} \n <User Input>\n\n"
+            f"Update the Existing Summary with the New Context on this topic: \n <User Input> \n {state.research_topic_en} \n <User Input>\n\n"
         )
     else:
         human_message_content = (
             f"<Context> \n {most_recent_web_research} \n <Context>"
-            f"Create a Summary using the Context on this topic: \n <User Input> \n {state.research_topic} \n <User Input>\n\n"
+            f"Create a Summary using the Context on this topic: \n <User Input> \n {state.research_topic_en} \n <User Input>\n\n"
         )
 
     # Run the LLM
@@ -241,20 +241,21 @@ def summarize_sources(state: SummaryState, config: RunnableConfig):
 
     # Choose the appropriate LLM based on the provider
     if configurable.llm_provider == "groq":
-        llm = ChatGroq(
+        summarize_llm = ChatGroq(
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=131072,
             service_tier="auto",
         )
     else:  # Default to Ollama
-        llm = ChatOllama(
+        summarize_llm = ChatOllama(
             base_url=configurable.ollama_base_url,
             model=configurable.local_llm,
             temperature=0,
+            num_predict=64000,
         )
 
-    result = llm.invoke(
+    result = await summarize_llm.ainvoke(
         [
             SystemMessage(content=summarizer_instructions),
             HumanMessage(content=human_message_content),
@@ -262,11 +263,11 @@ def summarize_sources(state: SummaryState, config: RunnableConfig):
     )
 
     # Strip thinking tokens if configured
-    running_summary = result.content
+    running_summary_en = result.content
     if configurable.strip_thinking_tokens:
-        running_summary = strip_thinking_tokens(running_summary)
+        running_summary_en = await strip_thinking_tokens(running_summary_en)
 
-    return {"running_summary": running_summary}
+    return {"running_summary_en": running_summary_en}
 
 
 def reflect_on_summary(state: SummaryState, config: RunnableConfig):
@@ -311,7 +312,7 @@ def reflect_on_summary(state: SummaryState, config: RunnableConfig):
                 )
             ),
             HumanMessage(
-                content=f"Reflect on our existing knowledge: \n === \n {state.running_summary}, \n === \n And now identify a knowledge gap and generate a follow-up web search query:"
+                content=f"Reflect on our existing knowledge: \n === \n {state.running_summary_en}, \n === \n And now identify a knowledge gap and generate a follow-up web search query:"
             ),
         ]
     )
@@ -343,7 +344,7 @@ def finalize_summary(state: SummaryState):
         state: Current graph state containing the running summary and sources gathered
 
     Returns:
-        Dictionary with state update, including running_summary key containing the formatted final summary with sources
+        Dictionary with state update, including running_summary_en key containing the formatted final summary with sources
     """
 
     # Deduplicate sources before joining
@@ -360,10 +361,10 @@ def finalize_summary(state: SummaryState):
 
     # Join the deduplicated sources
     all_sources = "\n".join(unique_sources)
-    state.running_summary = (
-        f"## Summary\n{state.running_summary}\n\n ### Sources:\n{all_sources}"
+    state.running_summary_en = (
+        f"## Summary\n{state.running_summary_en}\n\n ### Sources:\n{all_sources}"
     )
-    return {"running_summary": state.running_summary}
+    return {"running_summary_en": state.running_summary_en}
 
 
 def route_research(

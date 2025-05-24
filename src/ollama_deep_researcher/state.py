@@ -13,7 +13,7 @@ class SummaryState:
     sources_gathered: Annotated[list, operator.add] = field(default_factory=list)
     saved_frist_result_de: Annotated[list, operator.add] = field(default_factory=list)
     research_loop_count: int = field(default=0) # Research loop count
-    running_summary: str = field(default=None) # Final report
+    running_summary_en: str = field(default=None) # Final report
 
 @dataclass(kw_only=True)
 class SummaryStateInput:
