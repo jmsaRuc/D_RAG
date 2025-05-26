@@ -1,6 +1,6 @@
 import json
 
-from typing_extensions import Literal, Optional
+from typing_extensions import Literal, Optional, Union
 from typing import Dict, List, Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -10,12 +10,9 @@ from langchain_groq import ChatGroq
 from langgraph.graph import START, END, StateGraph
 
 from ollama_deep_researcher.configuration import Configuration, SearchAPI
-from ollama_deep_researcher.utils import (
-    strip_thinking_tokens,
-    get_config_value,
+from ollama_deep_researcher.utils import strip_thinking_tokens, format_sources
+from ollama_deep_researcher.translate_async import (
     deduplicate_translate_and_format_sources,
-    format_sources
-    
 )
 from ollama_deep_researcher.retsinfo_crawl import (
     retsinfo_search_and_crawl,
@@ -28,16 +25,19 @@ from ollama_deep_researcher.state import (
 from ollama_deep_researcher.prompts import (
     summarizer_instructions,
     reflection_instructions,
-    translate_texts_instructions,
     query_writer_instructions_with_tag,
+    translate_texts_whith_ex_instructions,
+    research_topic_write_instructions,
+    translate_qustion_instructions,
+    final_answer_instructions,
     get_current_date,
 )
 
 
 # Nodes
-async def translate_research_topic(
+async def translate_question(
     state: SummaryState, config: RunnableConfig
-) -> Dict[str, str]:
+) -> SummaryState:
     """
     Translate a Danish research topic into English using the configured LLM provider.
     Parameters:
@@ -50,7 +50,7 @@ async def translate_research_topic(
     """
 
     # Insert the Danish reasearch topic into the prompt
-    human_message_content = f"Translate the following text from Danish to English. \n <User Input> \n {state.research_topic} \n <User Input>\n\n"
+    human_message_content = f"Translate the following qustion from Danish to English. \n <User Input> \n {state.question_da} \n <User Input>\n\n"
 
     # Configure
     configurable = Configuration.from_runnable_config(config)
@@ -61,7 +61,7 @@ async def translate_research_topic(
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=12000,
-            service_tier="auto"
+            service_tier="auto",
         )
     else:  # Default to Ollama
         llm_translate_q = ChatOllama(
@@ -72,22 +72,79 @@ async def translate_research_topic(
 
     result = await llm_translate_q.ainvoke(
         [
-            SystemMessage(content=translate_texts_instructions),
+            SystemMessage(content=translate_qustion_instructions),
             HumanMessage(content=human_message_content),
         ]
     )
 
     # Strip thinking tokens
     if configurable.strip_thinking_tokens:
-        translated_research_topic = await strip_thinking_tokens(result.content)
+        translated_question = await strip_thinking_tokens(result.content)
 
     return {
-        "research_topic_da": state.research_topic,
-        "research_topic_en": translated_research_topic,
+        "question_da": state.question_da,
+        "question_en": translated_question,
     }
 
 
-async def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[str, str]:
+async def generate_research_topic(
+    state: SummaryState, config: RunnableConfig
+) -> SummaryState:
+
+    formattet_prompt = research_topic_write_instructions.format(
+        question=state.question_en,
+    )
+
+    # Configure
+    configurable = Configuration.from_runnable_config(config)
+
+    # Choose the appropriate LLM based on the provider
+    if configurable.llm_provider == "groq":
+        llm_genrate_research_topic = ChatGroq(
+            model=configurable.groq_llm,
+            temperature=0,
+            max_tokens=34000,
+            service_tier="auto",
+            response_format={"type": "json_object"},
+        )
+    else:  # Default to Ollama
+        llm_genrate_research_topic = ChatOllama(
+            base_url=configurable.ollama_base_url,
+            model=configurable.local_llm,
+            temperature=0,
+            num_predict=34000,
+            format="json",
+        )
+
+    result = await llm_genrate_research_topic.ainvoke(
+        [
+            SystemMessage(content=formattet_prompt),
+            HumanMessage(
+                content=f"Reflect on the question, identify the main topic, and knowledge gaps, and generate questions for further research (Format your response as a JSON object):"
+            ),
+        ]
+    )
+
+    # Get the content
+    content = result.content
+
+    # Parse the JSON response and get the query
+    try:
+        follow_up_questions = json.loads(content)
+        research_topic_en = follow_up_questions["follow_up_questions"]
+        if isinstance(research_topic_en, list):
+            # If the response is a list, join it into a single string
+            research_topic_en = " ".join(research_topic_en)
+    except (json.JSONDecodeError, KeyError):
+        # If parsing fails or the key is not found, use a fallback query
+        print(f"Failed to parse JSON: {content}")
+        if configurable.strip_thinking_tokens:
+            content = await strip_thinking_tokens(content)
+        research_topic_en = content
+    return {"research_topic_en": research_topic_en}
+
+
+async def generate_query(state: SummaryState, config: RunnableConfig) -> SummaryState:
     """LangGraph node that generates a search query based on the research topic.
 
     Uses an LLM to create an optimized search query for web research based on
@@ -105,8 +162,9 @@ async def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[st
     current_date = await get_current_date()
     formatted_prompt = query_writer_instructions_with_tag.format(
         current_date=current_date,
-        research_topic_da=state.research_topic_da,
         research_topic_en=state.research_topic_en,
+        question_en=state.question_en,
+        question_da=state.question_da,
     )
 
     # Configure
@@ -145,16 +203,17 @@ async def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[st
     # Parse the JSON response and get the query
     try:
         query = json.loads(content)
-        search_query_en = query["query"]
+        search_query_da = query["query"]
     except (json.JSONDecodeError, KeyError):
         # If parsing fails or the key is not found, use a fallback query
+        print(f"Failed to parse JSON: {content}")
         if configurable.strip_thinking_tokens:
             content = await strip_thinking_tokens(content)
-        search_query_en = content
-    return {"search_query_en": search_query_en}
+        search_query_da = content
+    return {"search_query_da": search_query_da}
 
 
-async def web_research(state: SummaryState) -> Dict[str, List[Dict[str, Any]]]:
+async def web_research(state: SummaryState) -> SummaryState:
     """LangGraph node that performs web research using the generated search query.
 
        Perform web research by executing a search and crawl using the 'retsinfo' service.
@@ -165,44 +224,49 @@ async def web_research(state: SummaryState) -> Dict[str, List[Dict[str, Any]]]:
     """
 
     # Use the configured retsinfo search and crawl
-    search_results_da = await retsinfo_search_and_crawl(
-        query=state.search_query_en,
-        max_results=3,
-    )
+    search_results_da = await retsinfo_search_and_crawl(state.search_query_da, 3, state)
 
     return {
-        "search_results_da": search_results_da,
+        "search_results_da": [search_results_da],
     }
 
 
-async def translate_search_results(state: SummaryState, config: RunnableConfig) -> Dict[str, List[Any]]:
-    
-    search_results_da = state.search_results_da
+async def translate_search_results(
+    state: SummaryState, config: RunnableConfig
+) -> Dict[str, List[Any]]:
+
+    latest_search_results_da = state.search_results_da[-1]
     configurable = Configuration.from_runnable_config(config)
-    
+
     if configurable.llm_provider == "groq":
         llm_translate_s = ChatGroq(
             model=configurable.groq_llm,
             temperature=0,
-            max_tokens=34000,
-            service_tier="auto"
+            max_tokens=66000,
+            service_tier="auto",
         )
     else:  # Default to Ollama
         llm_translate_s = ChatOllama(
             model=configurable.local_llm,
             temperature=0,
-            num_predict=34000,
+            num_predict=66000,
         )
-    
-    search_str_en, saved_first_de = await deduplicate_translate_and_format_sources(search_results_da, llm_translate_s)
-    
+
+    search_str_en, saved_first_en = await deduplicate_translate_and_format_sources(
+        latest_search_results_da, llm_translate_s, 64000
+    )
+
     return {
-        "sources_gathered": [await format_sources(search_results_da)],
+        "sources_gathered": [await format_sources(latest_search_results_da)],
+        "research_loop_count": state.research_loop_count + 1,
         "web_research_results_en": [search_str_en],
-        "saved_frist_result_de": [saved_first_de]
+        "saved_frist_result_en": [saved_first_en],
     }
 
-async def summarize_sources(state: SummaryState, config: RunnableConfig):
+
+async def summarize_sources(
+    state: SummaryState, config: RunnableConfig
+) -> SummaryState:
     """LangGraph node that summarizes web research results.
 
     Uses an LLM to create or update a running summary based on the newest web research
@@ -261,16 +325,23 @@ async def summarize_sources(state: SummaryState, config: RunnableConfig):
             HumanMessage(content=human_message_content),
         ]
     )
+    # check if the new summary is longer than the previous one
 
     # Strip thinking tokens if configured
     running_summary_en = result.content
     if configurable.strip_thinking_tokens:
         running_summary_en = await strip_thinking_tokens(running_summary_en)
+    # check if the new summary is longer than the previous one
+    if existing_summary and len(running_summary_en) < len(existing_summary):
+        # If the new summary is shorter, keep the existing summary
+        running_summary_en = existing_summary
 
     return {"running_summary_en": running_summary_en}
 
 
-def reflect_on_summary(state: SummaryState, config: RunnableConfig):
+async def reflect_on_summary(
+    state: SummaryState, config: RunnableConfig
+) -> SummaryState:
     """LangGraph node that identifies knowledge gaps and generates follow-up queries.
 
     Analyzes the current summary to identify areas for further research and generates
@@ -290,29 +361,31 @@ def reflect_on_summary(state: SummaryState, config: RunnableConfig):
 
     # Choose the appropriate LLM based on the provider
     if configurable.llm_provider == "groq":
-        llm_json_mode = ChatGroq(
+        llm_json_mode_34k = ChatGroq(
             model=configurable.groq_llm,
             temperature=0,
-            max_tokens=131072,
+            max_tokens=34000,
             response_format={"type": "json_object"},
         )
     else:  # Default to Ollama
-        llm_json_mode = ChatOllama(
+        llm_json_mode_34k = ChatOllama(
             base_url=configurable.ollama_base_url,
             model=configurable.local_llm,
             temperature=0,
+            num_predict=34000,
             format="json",
         )
 
-    result = llm_json_mode.invoke(
+    result = await llm_json_mode_34k.ainvoke(
         [
             SystemMessage(
                 content=reflection_instructions.format(
-                    research_topic=state.research_topic
+                    research_topic=state.research_topic_en,
+                    summery=state.running_summary_en,
                 )
             ),
             HumanMessage(
-                content=f"Reflect on our existing knowledge: \n === \n {state.running_summary_en}, \n === \n And now identify a knowledge gap and generate a follow-up web search query:"
+                content=f"Reflect on our existing knowledge, identify a knowledge gap and generate a follow-up database search query:"
             ),
         ]
     )
@@ -326,14 +399,219 @@ def reflect_on_summary(state: SummaryState, config: RunnableConfig):
         # Check if query is None or empty
         if not query:
             # Use a fallback query
-            return {"search_query": f"Tell me more about {state.research_topic}"}
-        return {"search_query": query}
-    except (json.JSONDecodeError, KeyError, AttributeError):
+            raise ValueError("LLM failed to make a qurry")
+        return {"follow_up_query_en": query}
+    except (json.JSONDecodeError, KeyError, AttributeError) as e:
         # If parsing fails or the key is not found, use a fallback query
-        return {"search_query": f"Tell me more about {state.research_topic}"}
+        print(f"{str(e)}")
 
 
-def finalize_summary(state: SummaryState):
+async def translate_content_follow_up(
+    state: SummaryState, config: RunnableConfig
+) -> SummaryState:
+
+    # set the char limit for the translation
+    char_limit = 12000 * 3
+    char_limit = round(char_limit)
+
+    # Get the first search result in English
+    try:
+        recent_saved_first_en = state.saved_frist_result_en[0]
+    except IndexError:
+        recent_saved_first_en = state.question_en
+
+    # Check if the saved first result is over char_limit
+    test_content_len = recent_saved_first_en
+    print(len(test_content_len))
+    print(char_limit)
+    if len(test_content_len) > char_limit:
+        recent_saved_first_en = test_content_len[0:char_limit] + "... [truncated]"
+        print(len(recent_saved_first_en))
+
+    # Get the first search result in Danish
+    try:
+        first_search_result_da = state.search_results_da[0]["results"][0]["content"]
+    except IndexError:
+        first_search_result_da = state.question_da
+
+    test_content_len = first_search_result_da
+    print(len(test_content_len))
+    print(char_limit)
+    if len(test_content_len) > char_limit:
+        first_search_result_d = test_content_len[0:char_limit] + "... [truncated]"
+        print(len(first_search_result_d))
+
+    # Format the prompt
+    formatted_prompt = translate_texts_whith_ex_instructions.format(
+        english_text_example=recent_saved_first_en,
+        translated_to_danish_text_example=first_search_result_da,
+    )
+
+    # Prepare the human message content
+    human_message_content = f"Translate the following text from English to Danish. \n <User Input> \n {state.follow_up_query_en} \n <User Input>\n\n"
+
+    # Configure the LLM based on the provider
+    configurable = Configuration.from_runnable_config(config)
+
+    # Choose the appropriate LLM based on the provider
+    if configurable.llm_provider == "groq":
+        translate_follow_up_llm = ChatGroq(
+            model=configurable.groq_llm,
+            temperature=0,
+            max_tokens=26000,
+            service_tier="auto",
+        )
+    else:  # Default to Ollama
+        translate_follow_up_llm = ChatOllama(
+            base_url=configurable.ollama_base_url,
+            model=configurable.local_llm,
+            temperature=0,
+            num_predict=26000,
+        )
+
+    result = await translate_follow_up_llm.ainvoke(
+        [
+            SystemMessage(content=formatted_prompt),
+            HumanMessage(content=human_message_content),
+        ]
+    )
+
+    if configurable.strip_thinking_tokens:
+        translated_follow_up_qurry = await strip_thinking_tokens(result.content)
+
+    return {"search_query_da": translated_follow_up_qurry}
+
+
+async def generate_final_answer(
+    state: SummaryState, config: RunnableConfig
+) -> SummaryState:
+
+    # Final summery in English
+    final_summary_en = state.running_summary_en
+
+    # original question in English
+    question_en = state.question_en
+
+    # Format the promt
+    formatted_prompt = final_answer_instructions.format(
+        summary=final_summary_en,
+    )
+
+    # human message content
+    human_message_content = f"Think carefully about the provided Context first. Then generate a final answer to the user's question based on the summary provided, when using sources from the summary to answer, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause), as citation: \n <User Input> \n {question_en} \n <User Input>\n\n"
+
+    # Configure
+    configurable = Configuration.from_runnable_config(config)
+
+    # Choose the appropriate LLM based on the provider
+    if configurable.llm_provider == "groq":
+        translate_follow_up_llm = ChatGroq(
+            model=configurable.groq_llm,
+            temperature=0,
+            max_tokens=34000,
+            service_tier="auto",
+        )
+    else:  # Default to Ollama
+        translate_follow_up_llm = ChatOllama(
+            base_url=configurable.ollama_base_url,
+            model=configurable.local_llm,
+            temperature=0,
+            num_predict=34000,
+        )
+
+    result = await translate_follow_up_llm.ainvoke(
+        [
+            SystemMessage(content=formatted_prompt),
+            HumanMessage(content=human_message_content),
+        ]
+    )
+
+    # Get the content
+    content = result.content
+
+    # Strip thinking tokens if configured
+    question_answered_en = content
+    if configurable.strip_thinking_tokens:
+        question_answered_en = await strip_thinking_tokens(content)
+
+    return {"question_answered_en": question_answered_en}
+
+
+async def translate_answer(state: SummaryState, config: RunnableConfig) -> SummaryState:
+
+    # Final answer in English
+    char_limit = 12000 * 3
+    char_limit = round(char_limit)
+
+    # Get the first search result in English
+    try:
+        recent_saved_first_en = state.saved_frist_result_en[0]
+    except IndexError:
+        recent_saved_first_en = state.question_en
+
+    # Check if the saved first result is over char_limit
+    test_content_len = recent_saved_first_en
+    print(len(test_content_len))
+    print(char_limit)
+    if len(test_content_len) > char_limit:
+        recent_saved_first_en = test_content_len[0:char_limit] + "... [truncated]"
+        print(len(recent_saved_first_en))
+
+    # Get the first search result in Danish
+    try:
+        first_search_result_da = state.search_results_da[0]["results"][0]["content"]
+    except IndexError:
+        first_search_result_da = state.question_da
+
+    # Check if first search is over char_limit
+    test_content_len = first_search_result_da
+    print(len(test_content_len))
+    print(char_limit)
+    if len(test_content_len) > char_limit:
+        first_search_result_d = test_content_len[0:char_limit] + "... [truncated]"
+        print(len(first_search_result_d))
+
+    # Format the prompt
+    formatted_prompt = translate_texts_whith_ex_instructions.format(
+        english_text_example=recent_saved_first_en,
+        translated_to_danish_text_example=first_search_result_da,
+    )
+
+    # Prepare the human message content
+    human_message_content = f"Translate the following text from English to Danish. \n <User Input> \n {state.question_answered_en} \n <User Input>\n\n"
+
+    # Configure the LLM based on the provider
+    configurable = Configuration.from_runnable_config(config)
+
+    if configurable.llm_provider == "groq":
+        translate_follow_up_llm = ChatGroq(
+            model=configurable.groq_llm,
+            temperature=0,
+            max_tokens=26000,
+            service_tier="auto",
+        )
+    else:  # Default to Ollama
+        translate_follow_up_llm = ChatOllama(
+            base_url=configurable.ollama_base_url,
+            model=configurable.local_llm,
+            temperature=0,
+            num_predict=26000,
+        )
+
+    result = await translate_follow_up_llm.ainvoke(
+        [
+            SystemMessage(content=formatted_prompt),
+            HumanMessage(content=human_message_content),
+        ]
+    )
+    translated_summery = result.content
+    if configurable.strip_thinking_tokens:
+        translated_summery = await strip_thinking_tokens(result.content)
+
+    return {"question_answered_da": translated_summery}
+
+
+async def finalize_answer(state: SummaryState) -> SummaryState:
     """LangGraph node that finalizes the research summary.
 
     Prepares the final output by deduplicating and formatting sources, then
@@ -344,7 +622,7 @@ def finalize_summary(state: SummaryState):
         state: Current graph state containing the running summary and sources gathered
 
     Returns:
-        Dictionary with state update, including running_summary_en key containing the formatted final summary with sources
+        Dictionary with state update, including question_answered_da key containing the formatted final summary with sources
     """
 
     # Deduplicate sources before joining
@@ -361,15 +639,15 @@ def finalize_summary(state: SummaryState):
 
     # Join the deduplicated sources
     all_sources = "\n".join(unique_sources)
-    state.running_summary_en = (
-        f"## Summary\n{state.running_summary_en}\n\n ### Sources:\n{all_sources}"
+    state.question_answered_da = (
+        f"## Answer\n{state.question_answered_da}\n\n ### Sources:\n{all_sources}"
     )
-    return {"running_summary_en": state.running_summary_en}
+    return {"question_answered_da": state.question_answered_da}
 
 
-def route_research(
+async def route_research(
     state: SummaryState, config: RunnableConfig
-) -> Literal["finalize_summary", "web_research"]:
+) -> Literal["generate_final_answer", "translate_content_follow_up"]:
     """LangGraph routing function that determines the next step in the research flow.
 
     Controls the research loop by deciding whether to continue gathering information
@@ -380,14 +658,14 @@ def route_research(
         config: Configuration for the runnable, including max_web_research_loops setting
 
     Returns:
-        String literal indicating the next node to visit ("web_research" or "finalize_summary")
+        String literal indicating the next node to visit ("translate_content_follow_up" or "generate_final_answer")
     """
 
     configurable = Configuration.from_runnable_config(config)
     if state.research_loop_count <= configurable.max_web_research_loops:
-        return "web_research"
+        return "translate_content_follow_up"
     else:
-        return "finalize_summary"
+        return "generate_final_answer"
 
 
 # Add nodes and edges
@@ -397,22 +675,30 @@ builder = StateGraph(
     output=SummaryStateOutput,
     config_schema=Configuration,
 )
-builder.add_node("translate_research_topic", translate_research_topic)
+builder.add_node("translate_question", translate_question)
+builder.add_node("generate_research_topic", generate_research_topic)
 builder.add_node("generate_query", generate_query)
 builder.add_node("web_research", web_research)
 builder.add_node("translate_search_results", translate_search_results)
 builder.add_node("summarize_sources", summarize_sources)
 builder.add_node("reflect_on_summary", reflect_on_summary)
-builder.add_node("finalize_summary", finalize_summary)
+builder.add_node("translate_content_follow_up", translate_content_follow_up)
+builder.add_node("translate_answer", translate_answer)
+builder.add_node("generate_final_answer", generate_final_answer)
+builder.add_node("finalize_answer", finalize_answer)
 
 # Add edges
-builder.add_edge(START, "translate_research_topic")
-builder.add_edge("translate_research_topic", "generate_query")
+builder.add_edge(START, "translate_question")
+builder.add_edge("translate_question", "generate_research_topic")
+builder.add_edge("generate_research_topic", "generate_query")
 builder.add_edge("generate_query", "web_research")
 builder.add_edge("web_research", "translate_search_results")
 builder.add_edge("translate_search_results", "summarize_sources")
 builder.add_edge("summarize_sources", "reflect_on_summary")
 builder.add_conditional_edges("reflect_on_summary", route_research)
-builder.add_edge("finalize_summary", END)
+builder.add_edge("translate_content_follow_up", "web_research")
+builder.add_edge("generate_final_answer", "translate_answer")
+builder.add_edge("translate_answer", "finalize_answer")
+builder.add_edge("finalize_answer", END)
 
 graph = builder.compile()

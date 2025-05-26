@@ -5,7 +5,7 @@ from crawl4ai import (
     CrawlerRunConfig,
     CacheMode,
     BrowserConfig,
-    RateLimiter
+    RateLimiter,
 )
 from crawl4ai.models import CrawlResultContainer
 from crawl4ai.async_dispatcher import MemoryAdaptiveDispatcher
@@ -16,11 +16,16 @@ from typing import Dict, Any, List
 import asyncio
 import httpx
 import collections.abc
-
+from ollama_deep_researcher.state import (
+    SummaryState,
+)
 
 ##_________________________________________search and link/metada grapper_______________________________________________
 
-async def retsinfo_query_search(query: str, max_results: int) -> List[Dict[str, Any]]:
+
+async def retsinfo_query_search(
+    query: str, max_results: int, state: SummaryState
+) -> List[Dict[str, Any]]:
     """
     Perform a query search on the Retsinformation API.
 
@@ -40,6 +45,45 @@ async def retsinfo_query_search(query: str, max_results: int) -> List[Dict[str, 
     # ps: max_results how many results to return
     # t: query the search term
     params = {"dt": 10, "h": False, "ps": max_results, "t": query}
+    if state.research_loop_count > 0:
+        params = {
+            "dt": [
+                10,
+                1480,
+                20,
+                30,
+                40,
+                50,
+                90,
+                120,
+                270,
+                60,
+                100,
+                80,
+                110,
+                130,
+                140,
+                150,
+                160,
+                170,
+                180,
+                200,
+                210,
+                220,
+                1510,
+                1490,
+                -10,
+                230,
+                240,
+                250,
+                260,
+                980,
+            ],
+            "h": False,
+            "ps": max_results + 2,
+            "t": query,
+        }
+    print(params)
     try:
         # Create an asynchronous HTTP client
         async with httpx.AsyncClient() as client:
@@ -47,6 +91,7 @@ async def retsinfo_query_search(query: str, max_results: int) -> List[Dict[str, 
             response = await client.get(
                 "https://www.retsinformation.dk/api/documentsearch", params=params
             )
+            print(response.request.url)
             # Raise an exception if the request was unsuccessful
             response.raise_for_status()
             # Return the list of documents from the JSON response
@@ -120,7 +165,7 @@ async def get_related(search_result: Dict[str, Any]) -> Dict[str, Any]:
 
 
 async def retsinfo_search(
-    qury: str, max_results: int
+    qury: str, max_results: int, state: SummaryState
 ) -> Dict[str, List[Dict[str, Any]]]:
     """
     Perform a search query on the Retsinformation API and retrieve related documents.
@@ -137,7 +182,7 @@ async def retsinfo_search(
     try:
         results = []
         ## get the search main law results
-        search_results = await retsinfo_query_search(qury, max_results)
+        search_results = await retsinfo_query_search(qury, max_results, state)
 
         ## create a list of tasks to fetch related documents for each main document
         tasks = [asyncio.create_task(get_related(result)) for result in search_results]
@@ -172,10 +217,10 @@ async def clean_content_crawlr(
         Dict[str, CrawlResultContainer]: The cleaned markdown content extracted from the webpage.
     """
     urls = list(id_url_pair.values())
-    
+
     # create the browser configuration
     browser_config = BrowserConfig(browser_type="chromium", headless=True)
-    
+
     # Create crawler run configuration
     crawler_config = CrawlerRunConfig(
         cache_mode=CacheMode.BYPASS,
@@ -192,13 +237,13 @@ async def clean_content_crawlr(
         ),
         magic=True,
     )
-    
+
     dispatcher = MemoryAdaptiveDispatcher(
         memory_threshold_percent=90.0,
         check_interval=1.0,
         max_session_permit=40,
         rate_limiter=RateLimiter(
-            base_delay=(0.5, 2),
+            base_delay=(1, 3),
             max_delay=10.0,
             max_retries=3,
             rate_limit_codes=[429, 503],
@@ -207,7 +252,7 @@ async def clean_content_crawlr(
 
     # enitialize the crawler
     crawler = AsyncWebCrawler(config=browser_config)
-    
+
     # Start the crawler
     results = await crawler.arun_many(
         urls=urls,
@@ -239,7 +284,7 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
     crawl_results = await clean_content_crawlr(id_url_pair_v)
 
     # Iterate through the crawl results and map them back to their corresponding IDs
-    try: 
+    try:
         for result in crawl_results:
             if result.success:
                 for id, url in id_url_pair_v.items():
@@ -252,10 +297,10 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
                     f"Response Header: {result.response_headers}",
                     f"Status Code: {result.status_code}",
                     f"Full Error message:",
-                    f"{result.error_message}"
+                    f"{result.error_message}",
                 )
     except ValueError as e:
-        print(f"Error: {str(e)}")
+        print(f"Warning: {str(e)}")
 
     # Check if the ID-URL pairs match the crawl results
     try:
@@ -267,8 +312,8 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
                     f"ID-URL pair mismatch: {id} - {id_url_pair_v[id]} != {result.url}",
                     f"Id: {id}",
                     f"URL: {id_url_pair_v[id]}",
-                    f"URL Macthing Id: {id_url_pair_v[id]}"
-                )     
+                    f"URL Macthing Id: {id_url_pair_v[id]}",
+                )
             else:
                 raise KeyError
     except ValueError as e:
@@ -280,7 +325,7 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
 ##________________________________________________formatting the data _______________________________________________
 
 
-async def extract_ids(data: Dict[str, Any]) -> Dict[str, str]:
+async def extract_ids(data: Dict[str, Any], state_header: str = None) -> Dict[str, str]:
     """
     Recursively extracts IDs and their associated URLs from a nested dictionary or list.
     Args:
@@ -295,19 +340,29 @@ async def extract_ids(data: Dict[str, Any]) -> Dict[str, str]:
         if "id" in data and "retsinfoLink" in data:
             # Construct the URL using the retsinfoLink
             results[data["id"]] = data["retsinfoLink"]
+        elif "header" in data:
+            state_header = data["header"]
         elif "id" in data and "eliPath" in data:
             # Check if the document is not historical
             if data["isHistorical"] == False:
-                # Construct the URL using the eliPath
-                results[data["id"]] = f"https://www.retsinformation.dk{data["eliPath"]}"
+                # check if header is the corect type
+                if (
+                    state_header == "Senere ændringer til forskriften"
+                    or state_header
+                    == "Alle bekendtgørelser m.v. og cirkulærer m.v. til denne lov"
+                ):
+                    # Construct the URL using the eliPath
+                    results[data["id"]] = (
+                        f"https://www.retsinformation.dk{data["eliPath"]}"
+                    )
         for v in data.values():
             # Recursively extract IDs from nested dictionaries
-            results.update(await extract_ids(v))
+            results.update(await extract_ids(v, state_header))
     # Check if the data is a list
     elif isinstance(data, list):
         for item in data:
             # Recursively extract IDs from nested lists
-            results.update(await extract_ids(item))
+            results.update(await extract_ids(item, state_header))
     return results
 
 
@@ -361,10 +416,14 @@ async def sort_after_crawl(
             results[search_result["id"]]["shortName"] = search_result["shortName"]
             results[search_result["id"]]["documentType"] = search_result["documentType"]
             results[search_result["id"]]["url"] = search_result["retsinfoLink"]
-            results[search_result["id"]]["content"] = crawl_results[
-                search_result["id"]
-            ].markdown.fit_markdown
-            state_id = search_result["id"]
+            try:
+                results[search_result["id"]]["content"] = crawl_results[
+                    search_result["id"]
+                ].markdown.fit_markdown
+                state_id = search_result["id"]
+            except KeyError:
+                results[search_result["id"]]["content"] = "... [NO_CONTENT_AVAILABLE]"
+
         # Check if the search result contains a header and a showExtendedReferenceLinks
         # If so, set the state_header variable
         elif "header" in search_result:
@@ -373,30 +432,40 @@ async def sort_after_crawl(
         # If so, extract relevant information and store it in the results dictionary
         elif "id" in search_result and "eliPath" in search_result:
             if search_result["isHistorical"] == False:
-                results[state_id] = {}
-                results[state_id]["suplementary_content"] = {}
-                results[state_id]["suplementary_content"][search_result["id"]] = {}
-                results[state_id]["suplementary_content"][search_result["id"]]["title"] = (
-                    search_result["title"]
-                )
-                results[state_id]["suplementary_content"][search_result["id"]][
-                    "popularTitle"
-                ] = search_result.get("popularTitle")
-                results[state_id]["suplementary_content"][search_result["id"]][
-                    "shortName"
-                ] = search_result.get("shortName")
-                results[state_id]["suplementary_content"][search_result["id"]][
-                    "documentType"
-                ] = state_header
-                results[state_id]["suplementary_content"][search_result["id"]][
-                    "url"
-                ] = f"https://www.retsinformation.dk{search_result["eliPath"]}"
-                results[state_id]["suplementary_content"][search_result["id"]][
-                    "releaseDate"
-                ] = search_result["offentliggoerelsesDato"]
-                results[state_id]["suplementary_content"][search_result["id"]][
-                    "content"
-                ] = crawl_results[search_result["id"]].markdown.fit_markdown
+                if (
+                    state_header == "Senere ændringer til forskriften"
+                    or state_header
+                    == "Alle bekendtgørelser m.v. og cirkulærer m.v. til denne lov"
+                ):
+                    results[state_id] = {}
+                    results[state_id]["suplementary_content"] = {}
+                    results[state_id]["suplementary_content"][search_result["id"]] = {}
+                    results[state_id]["suplementary_content"][search_result["id"]][
+                        "title"
+                    ] = search_result["title"]
+                    results[state_id]["suplementary_content"][search_result["id"]][
+                        "popularTitle"
+                    ] = search_result.get("popularTitle")
+                    results[state_id]["suplementary_content"][search_result["id"]][
+                        "shortName"
+                    ] = search_result.get("shortName")
+                    results[state_id]["suplementary_content"][search_result["id"]][
+                        "documentType"
+                    ] = state_header
+                    results[state_id]["suplementary_content"][search_result["id"]][
+                        "url"
+                    ] = f"https://www.retsinformation.dk{search_result["eliPath"]}"
+                    results[state_id]["suplementary_content"][search_result["id"]][
+                        "releaseDate"
+                    ] = search_result["offentliggoerelsesDato"]
+                    try:
+                        results[state_id]["suplementary_content"][search_result["id"]][
+                            "content"
+                        ] = crawl_results[search_result["id"]].markdown.fit_markdown
+                    except KeyError:
+                        results[state_id]["suplementary_content"][search_result["id"]][
+                            "content"
+                        ] = "... [NO_CONTENT_AVAILABLE]"
         # Recursively process nested dictionaries or lists
         for v in search_result.values():
             # Update the results dictionary with the processed data
@@ -417,7 +486,7 @@ async def sort_after_crawl(
 
 async def format_sorted_results(
     sorted_results_v: Dict[str, Any],
-) -> list[Dict[str, Any]]:
+) -> list[Dict[str, Any]] | int:
     """
     Format the sorted results into a more readable structure.
 
@@ -428,24 +497,29 @@ async def format_sorted_results(
         list[Dict[str, Any]]: A dictionary containing the formatted results.
     """
     formated_results_v = []
+    count: int = 0
     # format the results the sorted_results_v into a list of dictionaries
     formated_results_v = list(sorted_results_v.values())
+    count = len(formated_results_v)
     sorted_results_v = None
     # remove the "suplementary_content" key from each dictionary
     # and convert it to a list of dictionaries
     for value in formated_results_v:
         if value.get("suplementary_content") is not None:
             value["suplementary_content"] = list(value["suplementary_content"].values())
+            count += len(value["suplementary_content"])
         else:
             value["suplementary_content"] = []
 
-    return formated_results_v
+    return formated_results_v, count
 
 
 ##________________________________________________main function_______________________________________________
 
-@traceable
-async def retsinfo_search_and_crawl(query: str, max_results: int) -> Dict[str, Any]:
+
+async def retsinfo_search_and_crawl(
+    query: str, max_results: int, state: SummaryState
+) -> Dict[str, Any]:
     """
     Asynchronously performs a search and crawl operation on Retsinfo data.
     This function executes a series of asynchronous tasks to search for data
@@ -463,11 +537,11 @@ async def retsinfo_search_and_crawl(query: str, max_results: int) -> Dict[str, A
     Raises:
         Any exceptions raised by the underlying asynchronous functions.
     """
-    
+
     # Start the timer
     t0 = time.time()
     # Perform the search operation
-    search_result = await retsinfo_search(query, max_results)
+    search_result = await retsinfo_search(query, max_results, state)
     # Extract IDs and URLs from the search result
     id_url_pair = await extract_ids(search_result)
     # Perform the crawl operation
@@ -475,12 +549,13 @@ async def retsinfo_search_and_crawl(query: str, max_results: int) -> Dict[str, A
     # Sort the crawl results based on the search result
     sorted_results = await sort_after_crawl(search_result, crawl_results)
     # Format the sorted results for output
-    formatted_results = await format_sorted_results(sorted_results)
+    formatted_results, count = await format_sorted_results(sorted_results)
     # stop the timer
     t1 = time.time()
     final_results = {
         "query": query,
         "results": formatted_results,
         "response_time": t1 - t0,
+        "amount": count,
     }
     return final_results

@@ -15,7 +15,7 @@ class Configuration(BaseModel):
     """The configurable fields for the research assistant."""
 
     max_web_research_loops: int = Field(
-        default=3,
+        default=2,
         title="Research Depth",
         description="Number of research iterations to perform"
     )

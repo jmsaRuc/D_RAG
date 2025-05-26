@@ -211,7 +211,7 @@ URL: https://smith.langchain.com/studio/?baseUrl=http://0.0.0.0:2024
 ```
 ...but the browser will not launch from the container.
 
-Instead, visit this link with the correct baseUrl IP address: [`https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.1:2024`](https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.1:2024)
+Instead, visit this link with the correct baseUrl IP address: [`https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.la1:2024`](https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.1:2024)
 
 
 ## misc.
