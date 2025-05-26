@@ -58,7 +58,7 @@ async def format_sources(search_results: Dict[str, Any]) -> str:
     # Iterate through each source in the search results
     # and format them into a bullet-point list
     for source in search_results.get("results", []):
-        if source['title']:
+        if source.get('title'):
             lines.append(f"* {source['title']} : {source['url']}")
             if source.get("suplementary_content"):
                 for supplementary in source["suplementary_content"]:
