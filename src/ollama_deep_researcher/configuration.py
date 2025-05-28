@@ -15,7 +15,7 @@ class Configuration(BaseModel):
     """The configurable fields for the research assistant."""
 
     max_web_research_loops: int = Field(
-        default=3,
+        default=2,
         title="Research Depth",
         description="Number of research iterations to perform"
     )
@@ -29,8 +29,13 @@ class Configuration(BaseModel):
         title="GROQ LLM Model Name",
         description="Name of the GROQ LLM model to use"
     )
-    llm_provider: Literal["ollama", "lmstudio", "groq"] = Field(
-        default="ollama",
+    openai_llm: str = Field(
+        default="o4-mini",
+        title="OpenAI LLM Model Name",
+        description="Name of the OpenAI LLM model to use"
+    )
+    llm_provider: Literal["ollama","groq", "openai"] = Field(
+        default="groq",
         title="LLM Provider",
         description="Provider for the LLM (Ollama or LMStudio)"
     )
@@ -43,6 +48,11 @@ class Configuration(BaseModel):
         default="http://localhost:11434/",
         title="Ollama Base URL",
         description="Base URL for Ollama API"
+    )
+    openai_api_base: str = Field(
+        default="https://api.openai.com/v1/",
+        title="OpenAI Base URL",
+        description="Base URL for OpenAI API"
     )
     strip_thinking_tokens: bool = Field(
         default=True,

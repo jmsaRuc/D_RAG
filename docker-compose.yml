@@ -1,31 +1,11 @@
 volumes:
     langgraph-data:
         driver: local
-
-# Shared configuration for all crawl4ai environments
-#x-base-config: &base-config
-#  ports:
-#    - "11235:11235"  # Gunicorn port
-#  volumes:
-#    - /dev/shm:/dev/shm  # Chromium performance
-#    - ./crawl4ai_server_config.yml:/app/config.yml
-#  restart: unless-stopped
-#  healthcheck:
-#    test: ["CMD", "curl", "-f", "http://localhost:11235/health"]
-#    interval: 30s
-#    timeout: 10s
-#    retries: 3
-#    start_period: 40s
-#  user: "appuser"
-
 services:
     langgraph-redis:
         image: redis:6
-        command: --port 6380
-        ports:
-            - "6380:6380"
         healthcheck:
-            test: redis-cli -p 6380 ping
+            test: redis-cli ping
             interval: 5s
             timeout: 1s
             retries: 5
@@ -73,18 +53,8 @@ services:
             GROQ_API_KEY: ${GROQ_API_KEY}
             GROQ_LLM: ${GROQ_LLM}
             GROQ_API_BASE: ${GROQ_API_BASE}
+            OPENAI_API_BASE: ${OPENAI_API_BASE}
+            OPENAI_API_KEY: ${OPENAI_API_KEY}
         volumes:
             - /dev/shm:/dev/shm
         user: "appuser"
-        
-    #crawl4ai:
-    #    # 1. Default: Pull multi-platform test image from Docker Hub
-    #    # 2. Override with local image via: IMAGE=local-test docker compose up --build
-    #    image: ${CRAWL_IMAGE:-unclecode/crawl4ai:${CRAWL_TAG:-latest}}
-    #    build:
-    #        context: ./crawl4ai
-    #        dockerfile: Dockerfile
-    #        args:
-    #            INSTALL_TYPE: ${INSTALL_TYPE:-default}
-    #            ENABLE_GPU: ${ENABLE_GPU:-false}
-    #    <<: *base-config
