@@ -1,12 +1,13 @@
 import json
 
-from typing_extensions import Literal, Optional, Union
+from typing_extensions import Literal
 from typing import Dict, List, Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_ollama import ChatOllama
 from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 from langgraph.graph import START, END, StateGraph
 
 from ollama_deep_researcher.configuration import Configuration, SearchAPI
@@ -63,6 +64,13 @@ async def translate_question(
             max_tokens=12000,
             service_tier="auto",
         )
+    if configurable.llm_provider == "openai":
+        llm_translate_q = ChatOpenAI(
+            model=configurable.openai_llm,
+            base_url=configurable.openai_api_base,
+            temperature=1,
+            max_tokens=12000,
+        )
     else:  # Default to Ollama
         llm_translate_q = ChatOllama(
             model=configurable.local_llm,
@@ -105,6 +113,14 @@ async def generate_research_topic(
             temperature=0,
             max_tokens=34000,
             service_tier="auto",
+            response_format={"type": "json_object"},
+        )
+    if configurable.llm_provider == "openai":
+        llm_genrate_research_topic = ChatOpenAI(
+            model=configurable.openai_llm,
+            base_url=configurable.openai_api_base,
+            temperature=1,
+            max_tokens=12000,
             response_format={"type": "json_object"},
         )
     else:  # Default to Ollama
@@ -179,6 +195,14 @@ async def generate_query(state: SummaryState, config: RunnableConfig) -> Summary
             service_tier="auto",
             response_format={"type": "json_object"},
         )
+    if configurable.llm_provider == "openai":
+        llm_json_mode = ChatOpenAI(
+            model=configurable.openai_llm,
+            base_url=configurable.openai_api_base,
+            temperature=1,
+            max_tokens=12000,
+            response_format={"type": "json_object"},
+        )
     else:  # Default to Ollama
         llm_json_mode = ChatOllama(
             base_url=configurable.ollama_base_url,
@@ -244,6 +268,13 @@ async def translate_search_results(
             temperature=0,
             max_tokens=66000,
             service_tier="auto",
+        )
+    if configurable.llm_provider == "openai":
+        llm_translate_s = ChatOpenAI(
+            model=configurable.openai_llm,
+            base_url=configurable.openai_api_base,
+            temperature=1,
+            max_tokens=66000,
         )
     else:  # Default to Ollama
         llm_translate_s = ChatOllama(
@@ -311,6 +342,13 @@ async def summarize_sources(
             max_tokens=131072,
             service_tier="auto",
         )
+    if configurable.llm_provider == "openai":
+        summarize_llm = ChatOpenAI(
+            model=configurable.openai_llm,
+            base_url=configurable.openai_api_base,
+            temperature=1,
+            max_tokens=100000,
+        )
     else:  # Default to Ollama
         summarize_llm = ChatOllama(
             base_url=configurable.ollama_base_url,
@@ -364,6 +402,14 @@ async def reflect_on_summary(
         llm_json_mode_34k = ChatGroq(
             model=configurable.groq_llm,
             temperature=0,
+            max_tokens=34000,
+            response_format={"type": "json_object"},
+        )
+    if configurable.llm_provider == "openai":
+        llm_json_mode_34k = ChatOpenAI(
+            model=configurable.openai_llm,
+            base_url=configurable.openai_api_base,
+            temperature=1,
             max_tokens=34000,
             response_format={"type": "json_object"},
         )
@@ -461,6 +507,13 @@ async def translate_content_follow_up(
             max_tokens=26000,
             service_tier="auto",
         )
+    if configurable.llm_provider == "openai":
+        translate_follow_up_llm = ChatOpenAI(
+            model=configurable.openai_llm,
+            base_url=configurable.openai_api_base,
+            temperature=1,
+            max_tokens=26000,
+        )
     else:  # Default to Ollama
         translate_follow_up_llm = ChatOllama(
             base_url=configurable.ollama_base_url,
@@ -510,6 +563,13 @@ async def generate_final_answer(
             temperature=0,
             max_tokens=34000,
             service_tier="auto",
+        )
+    if configurable.llm_provider == "openai":
+        translate_follow_up_llm = ChatOpenAI(
+            model=configurable.openai_llm,
+            base_url=configurable.openai_api_base,
+            temperature=1,
+            max_tokens=34000,
         )
     else:  # Default to Ollama
         translate_follow_up_llm = ChatOllama(
@@ -583,12 +643,20 @@ async def translate_answer(state: SummaryState, config: RunnableConfig) -> Summa
     # Configure the LLM based on the provider
     configurable = Configuration.from_runnable_config(config)
 
+    
     if configurable.llm_provider == "groq":
         translate_follow_up_llm = ChatGroq(
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=26000,
             service_tier="auto",
+        )
+    if configurable.llm_provider == "openai":
+        translate_follow_up_llm = ChatOpenAI(
+            model=configurable.openai_llm,
+            base_url=configurable.openai_api_base,
+            temperature=1,
+            max_tokens=26000,
         )
     else:  # Default to Ollama
         translate_follow_up_llm = ChatOllama(

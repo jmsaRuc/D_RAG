@@ -53,6 +53,8 @@ services:
             GROQ_API_KEY: ${GROQ_API_KEY}
             GROQ_LLM: ${GROQ_LLM}
             GROQ_API_BASE: ${GROQ_API_BASE}
+            OPENAI_API_BASE: ${OPENAI_API_BASE}
+            OPENAI_API_KEY: ${OPENAI_API_KEY}
         volumes:
             - /dev/shm:/dev/shm
         user: "appuser"

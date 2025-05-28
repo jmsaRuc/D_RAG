@@ -254,8 +254,7 @@ The Summary:
 1. Analyze the provided summary to extract relevant information that directly addresses the user's question.
 2. Identify key legal principles, statutes, and case law mentioned in the summary that are pertinent to the user's question.
 3. Construct a answer that incorporates the relevant information from the summary.
-4. Ensure the answer is well-structured, logically organized, and uses appropriate legal terminology.
-5. When using sources from the summary to answer, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause), as citation.
+4. When using sources from the summary to answer, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause), as citation.
 </GOAL>
 
 <REQUIREMENTS>
