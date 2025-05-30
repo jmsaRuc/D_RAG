@@ -1,5 +1,6 @@
 from typing import Any, Dict
 
+
 async def get_config_value(value: Any) -> str:
     """
     Convert configuration values to string format, handling both string and enum types.
@@ -37,6 +38,7 @@ async def strip_thinking_tokens(text: str) -> str:
         text = text[:start] + text[end:]
     return text
 
+
 async def format_sources(search_results: Dict[str, Any]) -> str:
     """
     Format search results into a bullet-point list of sources with URLs.
@@ -58,7 +60,7 @@ async def format_sources(search_results: Dict[str, Any]) -> str:
     # Iterate through each source in the search results
     # and format them into a bullet-point list
     for source in search_results.get("results", []):
-        if source.get('title'):
+        if source.get("title"):
             lines.append(f"* {source['title']} : {source['url']}")
             if source.get("suplementary_content"):
                 for supplementary in source["suplementary_content"]:
@@ -67,7 +69,8 @@ async def format_sources(search_results: Dict[str, Any]) -> str:
                     # 'Senere ændringer til forskriften'
                     # 'Alle bekendtgørelser m.v. og cirkulærer m.v. til denne lov'
                     if (
-                        supplementary["documentType"] == "Senere ændringer til forskriften"
+                        supplementary["documentType"]
+                        == "Senere ændringer til forskriften"
                         or supplementary["documentType"]
                         == "Alle bekendtgørelser m.v. og cirkulærer m.v. til denne lov"
                     ):

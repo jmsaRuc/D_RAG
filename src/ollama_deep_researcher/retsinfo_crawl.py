@@ -9,8 +9,10 @@ from crawl4ai import (
 )
 from crawl4ai.models import CrawlResultContainer
 from crawl4ai.async_dispatcher import MemoryAdaptiveDispatcher
-from langsmith import traceable
 import time
+import gc
+gc.enable()
+
 
 from typing import Dict, Any, List
 import asyncio
@@ -204,7 +206,7 @@ async def retsinfo_search(
 
 
 async def clean_content_crawlr(
-    id_url_pair: Dict[int, str],
+    id_url_pair: Dict[int, str]
 ) -> Dict[str, CrawlResultContainer]:
     """
     Crawl the site from url,
@@ -254,6 +256,7 @@ async def clean_content_crawlr(
     crawler = AsyncWebCrawler(config=browser_config)
 
     # Start the crawler
+
     results = await crawler.arun_many(
         urls=urls,
         config=crawler_config,
@@ -263,7 +266,9 @@ async def clean_content_crawlr(
     return results
 
 
-async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultContainer]:
+async def main_crawl(
+    id_url_pair_v: Dict[int, str]
+) -> Dict[int, CrawlResultContainer]:
     """
     This function orchestrates the crawling process for a set of URLs associated with unique IDs.
     It utilizes the `clean_content_crawlr` function to fetch and clean the content of the URLs,
@@ -284,30 +289,27 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
     crawl_results = await clean_content_crawlr(id_url_pair_v)
 
     # Iterate through the crawl results and map them back to their corresponding IDs
-    try:
+    for id, url in id_url_pair_v.items():
         for result in crawl_results:
-            if result.success:
-                for id, url in id_url_pair_v.items():
-                    if result.url == url:
-                        end_results[id] = result
-                        break
-            else:
-                raise ValueError(
-                    f"Failed to crawl URL: {result.url}",
-                    f"Response Header: {result.response_headers}",
-                    f"Status Code: {result.status_code}",
-                    f"Full Error message:",
-                    f"{result.error_message}",
-                )
-    except ValueError as e:
-        print(f"Warning: {str(e)}")
+            if result.url == url:
+                if result.success:
+                    end_results[id] = result
+                    break
+                else:
+                    print("WARNING: Page failed to crawl")
+                    print(f"    Id: {id}")
+                    print(f"    Url: {url}")
+                    end_results[id] = result
+                    break
 
     # Check if the ID-URL pairs match the crawl results
     try:
         for id, result in end_results.items():
             if id_url_pair_v[id] == result.url:
-                print(result.url, "crawled OK!")
+                if result.success:
+                    print(result.url, "crawled OK!")
             elif id_url_pair_v[id] != result.url:
+                print(result.url, "crawled DONT MATCH!")
                 raise ValueError(
                     f"ID-URL pair mismatch: {id} - {id_url_pair_v[id]} != {result.url}",
                     f"Id: {id}",
@@ -416,14 +418,18 @@ async def sort_after_crawl(
             results[search_result["id"]]["shortName"] = search_result["shortName"]
             results[search_result["id"]]["documentType"] = search_result["documentType"]
             results[search_result["id"]]["url"] = search_result["retsinfoLink"]
-            try:
-                results[search_result["id"]]["content"] = crawl_results[
-                    search_result["id"]
-                ].markdown.fit_markdown
-                state_id = search_result["id"]
-            except KeyError:
-                results[search_result["id"]]["content"] = "... [NO_CONTENT_AVAILABLE]"
-
+            if crawl_results.get(int(search_result["id"])):
+                if crawl_results.get(int(search_result["id"])).success:
+                    results[search_result["id"]]["content"] = crawl_results.get(
+                        int(search_result["id"])
+                    ).markdown.fit_markdown
+                else:
+                    results[search_result["id"]][
+                        "content"
+                    ] = "...[NO_CONTENT_AVALIABLE]"
+                    results[search_result["id"]][
+                        "ex_content"
+                    ] = "...[NO_CONTENT_AVALIABLE]"
         # Check if the search result contains a header and a showExtendedReferenceLinks
         # If so, set the state_header variable
         elif "header" in search_result:
@@ -458,14 +464,20 @@ async def sort_after_crawl(
                     results[state_id]["suplementary_content"][search_result["id"]][
                         "releaseDate"
                     ] = search_result["offentliggoerelsesDato"]
-                    try:
-                        results[state_id]["suplementary_content"][search_result["id"]][
-                            "content"
-                        ] = crawl_results[search_result["id"]].markdown.fit_markdown
-                    except KeyError:
-                        results[state_id]["suplementary_content"][search_result["id"]][
-                            "content"
-                        ] = "... [NO_CONTENT_AVAILABLE]"
+                    if crawl_results.get(int(search_result["id"])):
+                        if crawl_results.get(int(search_result["id"])).success:
+                            results[state_id]["suplementary_content"][
+                                search_result["id"]
+                            ]["content"] = crawl_results.get(
+                                int(search_result["id"])
+                            ).markdown.fit_markdown
+                        else:
+                            results[state_id]["suplementary_content"][
+                                search_result["id"]
+                            ]["content"] = "...[NO_CONTENT_AVALIABLE]"
+                            results[state_id]["suplementary_content"][
+                                search_result["id"]
+                            ]["ex_content"] = "...[NO_CONTENT_AVALIABLE]"
         # Recursively process nested dictionaries or lists
         for v in search_result.values():
             # Update the results dictionary with the processed data

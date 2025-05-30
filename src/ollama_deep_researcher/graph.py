@@ -51,7 +51,7 @@ async def translate_question(
     """
 
     # Insert the Danish reasearch topic into the prompt
-    human_message_content = f"Translate the following qustion from Danish to English. \n <User Input> \n {state.question_da} \n <User Input>\n\n"
+    human_message_content = f"Translate the following text from Danish to English. \n <User Input> \n {state.question_da} \n <User Input>\n\n"
 
     # Configure
     configurable = Configuration.from_runnable_config(config)
@@ -62,9 +62,8 @@ async def translate_question(
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=12000,
-            service_tier="auto",
         )
-    if configurable.llm_provider == "openai":
+    elif configurable.llm_provider == "openai":
         llm_translate_q = ChatOpenAI(
             model=configurable.openai_llm,
             base_url=configurable.openai_api_base,
@@ -110,12 +109,11 @@ async def generate_research_topic(
     if configurable.llm_provider == "groq":
         llm_genrate_research_topic = ChatGroq(
             model=configurable.groq_llm,
-            temperature=0,
+            temperature=0.1,
             max_tokens=34000,
-            service_tier="auto",
             response_format={"type": "json_object"},
         )
-    if configurable.llm_provider == "openai":
+    elif configurable.llm_provider == "openai":
         llm_genrate_research_topic = ChatOpenAI(
             model=configurable.openai_llm,
             base_url=configurable.openai_api_base,
@@ -190,12 +188,11 @@ async def generate_query(state: SummaryState, config: RunnableConfig) -> Summary
     if configurable.llm_provider == "groq":
         llm_json_mode = ChatGroq(
             model=configurable.groq_llm,
-            temperature=0,
+            temperature=0.1,
             max_tokens=12000,
-            service_tier="auto",
             response_format={"type": "json_object"},
         )
-    if configurable.llm_provider == "openai":
+    elif configurable.llm_provider == "openai":
         llm_json_mode = ChatOpenAI(
             model=configurable.openai_llm,
             base_url=configurable.openai_api_base,
@@ -266,10 +263,11 @@ async def translate_search_results(
         llm_translate_s = ChatGroq(
             model=configurable.groq_llm,
             temperature=0,
+            request_timeout=120,
             max_tokens=66000,
-            service_tier="auto",
+            service_tier="auto"
         )
-    if configurable.llm_provider == "openai":
+    elif configurable.llm_provider == "openai":
         llm_translate_s = ChatOpenAI(
             model=configurable.openai_llm,
             base_url=configurable.openai_api_base,
@@ -284,7 +282,7 @@ async def translate_search_results(
         )
 
     search_str_en, saved_first_en = await deduplicate_translate_and_format_sources(
-        latest_search_results_da, llm_translate_s, 64000
+        latest_search_results_da, llm_translate_s, 64000, state
     )
 
     return {
@@ -340,9 +338,8 @@ async def summarize_sources(
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=131072,
-            service_tier="auto",
         )
-    if configurable.llm_provider == "openai":
+    elif configurable.llm_provider == "openai":
         summarize_llm = ChatOpenAI(
             model=configurable.openai_llm,
             base_url=configurable.openai_api_base,
@@ -370,7 +367,7 @@ async def summarize_sources(
     if configurable.strip_thinking_tokens:
         running_summary_en = await strip_thinking_tokens(running_summary_en)
     # check if the new summary is longer than the previous one
-    if existing_summary and len(running_summary_en) < len(existing_summary):
+    if existing_summary and len(running_summary_en) < 200:
         # If the new summary is shorter, keep the existing summary
         running_summary_en = existing_summary
 
@@ -401,11 +398,11 @@ async def reflect_on_summary(
     if configurable.llm_provider == "groq":
         llm_json_mode_34k = ChatGroq(
             model=configurable.groq_llm,
-            temperature=0,
+            temperature=0.1,
             max_tokens=34000,
             response_format={"type": "json_object"},
         )
-    if configurable.llm_provider == "openai":
+    elif configurable.llm_provider == "openai":
         llm_json_mode_34k = ChatOpenAI(
             model=configurable.openai_llm,
             base_url=configurable.openai_api_base,
@@ -505,9 +502,8 @@ async def translate_content_follow_up(
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=26000,
-            service_tier="auto",
         )
-    if configurable.llm_provider == "openai":
+    elif configurable.llm_provider == "openai":
         translate_follow_up_llm = ChatOpenAI(
             model=configurable.openai_llm,
             base_url=configurable.openai_api_base,
@@ -560,11 +556,10 @@ async def generate_final_answer(
     if configurable.llm_provider == "groq":
         translate_follow_up_llm = ChatGroq(
             model=configurable.groq_llm,
-            temperature=0,
+            temperature=0.1,
             max_tokens=34000,
-            service_tier="auto",
         )
-    if configurable.llm_provider == "openai":
+    elif configurable.llm_provider == "openai":
         translate_follow_up_llm = ChatOpenAI(
             model=configurable.openai_llm,
             base_url=configurable.openai_api_base,
@@ -649,9 +644,8 @@ async def translate_answer(state: SummaryState, config: RunnableConfig) -> Summa
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=26000,
-            service_tier="auto",
         )
-    if configurable.llm_provider == "openai":
+    elif configurable.llm_provider == "openai":
         translate_follow_up_llm = ChatOpenAI(
             model=configurable.openai_llm,
             base_url=configurable.openai_api_base,

@@ -2,10 +2,65 @@ from typing import Any, Dict, Tuple
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_groq import ChatGroq
 from langchain_ollama import ChatOllama
+from sentence_transformers import SentenceTransformer
+import asyncio
+import gc
 
 from ollama_deep_researcher.prompts import translate_texts_instructions
 from ollama_deep_researcher.utils import strip_thinking_tokens
-import asyncio
+from ollama_deep_researcher.state import SummaryState
+
+gc.enable()
+
+model = SentenceTransformer(
+            "dilovancelik/all-distilroberta-v1_danish_law_fine_tune"
+        )
+
+class SlidingWindowChunking:
+    @classmethod
+    async def create(cls, window_size=100, step=50):
+        self = cls()
+        self.window_size = window_size
+        self.step = step
+        return self
+    
+    async def chunk(self, text):
+        words = text.split()
+        chunks = []
+        for i in range(0, len(words) - self.window_size + 1, self.step):
+            chunks.append(" ".join(words[i : i + self.window_size]))
+        return chunks
+
+
+class CosineSimilarityExtractor:
+    @classmethod
+    async def create(cls, query):
+        self = cls()
+        self.query = query
+        self.model = model
+        return self
+        
+
+    async def find_relevant_chunks(self, chunks):
+        vectors = self.model.encode([self.query] + chunks)
+        similarities = self.model.similarity(vectors[0:1], vectors[1:]).flatten()
+        return [(chunks[i], similarities[i]) for i in range(len(chunks))]
+
+
+async def chunk_and_give_relevent(content: str, state: SummaryState, cutoff: float = 0.1) -> str:
+
+    chunker = await SlidingWindowChunking.create(window_size=100, step=50)
+    chunks = await chunker.chunk(content)
+
+    query = state.search_query_da
+    extractor = await CosineSimilarityExtractor.create(query)
+    relevant_chunks = await extractor.find_relevant_chunks(chunks)
+
+    final = ""
+    for r, s in relevant_chunks:
+        if s > cutoff:
+            final += f"{r}\n"
+    return final
 
 
 async def translate_content_async(
@@ -42,12 +97,23 @@ async def handel_suplementary_conten(
     source: Dict[str, Any],
     char_limit: int,
     llm_translate_s: ChatGroq | ChatOllama,
+    state: SummaryState,
 ) -> str:
     # check if over char_limit
-    test_content_len=suplementary_content.get("content", "")
+    test_content_len = suplementary_content.get("content", "")
     if len(test_content_len) > char_limit:
-        suplementary_content["content"] = test_content_len[0:char_limit] + "... [truncated]"
         
+        print("INFO- To long suplementary")
+        print(f"    Len befor chunk: {len(test_content_len)}")
+        
+        suplementary_content["content"] = await chunk_and_give_relevent(
+            suplementary_content["content"], state
+        )
+        
+        if suplementary_content["content"] > char_limit:
+                  suplementary_content["content"] = await chunk_and_give_relevent(suplementary_content["content"], state, cutoff=0.2)
+                  
+        print(f"    Len after chunk: {len(source["content"])}")
 
     translated_suplementary_content = await translate_content_async(
         suplementary_content["content"], llm_translate_s
@@ -84,17 +150,22 @@ async def handel_main_source(
     source: Dict[str, Any],
     char_limit: int,
     llm_translate_s: ChatGroq | ChatOllama,
+    state: SummaryState,
 ) -> str:
 
     # check if over char_limit
-    test_content_len=source.get("content", "")
-    print(len(test_content_len))
-    print(char_limit)
-    print(len(source["content"]))
+    test_content_len = source.get("content", "")
+  
     if source["content"]:
         if len(test_content_len) > char_limit:
-            source["content"] = test_content_len[0:char_limit]+"... [truncated]"
-            print(len(source["content"]))
+            print(f"INFO- To long main")
+            print(f"    Len befor chunk: {len(test_content_len)}")
+            source["content"] = await chunk_and_give_relevent(source["content"], state)
+            if len(source["content"]) > char_limit:
+                source["content"] = await chunk_and_give_relevent(source["content"], state, cutoff=0.2)
+                if len(source["content"]) > char_limit:
+                    source["content"] = await chunk_and_give_relevent(source["content"], state, cutoff=0.4)
+            print(f"    Len after chunk: {len(source["content"])}")
 
     translated_main_content = await translate_content_async(
         source["content"], llm_translate_s
@@ -118,10 +189,7 @@ async def handel_main_source(
         tasks = [
             asyncio.create_task(
                 handel_suplementary_conten(
-                    suplementary_content,
-                    source,
-                    char_limit,
-                    llm_translate_s,
+                    suplementary_content, source, char_limit, llm_translate_s, state
                 )
             )
             for suplementary_content in source["suplementary_content"]
@@ -136,6 +204,7 @@ async def deduplicate_translate_and_format_sources(
     search_response: Dict[str, Any],
     llm_translate_s: ChatGroq | ChatOllama,
     max_tokens_per_source: int,
+    state: SummaryState,
 ) -> Tuple[str, Any]:
     """
     Deduplicate, translate, and format search result sources.
@@ -170,25 +239,25 @@ async def deduplicate_translate_and_format_sources(
     char_limit = round(char_limit)
     # Varibel for saving first
     save_translate_ex: str = ""
-    
+
     # Format output
     formatted_text = "Sources:\n\n"
-    
+
     # Varibel for saving first
     save_translate_ex: str = ""
-    
+
     tasks = [
         asyncio.create_task(
             handel_main_source(
                 source,
                 char_limit,
                 llm_translate_s,
+                state,
             )
         )
         for source in unique_sources.values()
     ]
 
-    
     for i, task in enumerate(tasks, 1):
         formatted_text_out = await task
         formatted_text += formatted_text_out
