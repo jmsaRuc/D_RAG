@@ -109,7 +109,7 @@ async def generate_research_topic(
     if configurable.llm_provider == "groq":
         llm_genrate_research_topic = ChatGroq(
             model=configurable.groq_llm,
-            temperature=0.1,
+            temperature=0,
             max_tokens=34000,
             response_format={"type": "json_object"},
         )
@@ -262,7 +262,7 @@ async def translate_search_results(
     if configurable.llm_provider == "groq":
         llm_translate_s = ChatGroq(
             model=configurable.groq_llm,
-            temperature=0,
+            temperature=0.1,
             request_timeout=120,
             max_tokens=66000,
             service_tier="auto"
@@ -702,7 +702,7 @@ async def finalize_answer(state: SummaryState) -> SummaryState:
     # Join the deduplicated sources
     all_sources = "\n".join(unique_sources)
     state.question_answered_da = (
-        f"## Answer\n{state.question_answered_da}\n\n ### Sources:\n{all_sources}"
+        f"## Svar\n{state.question_answered_da}\n\n ### Kilder fundet (ikke nødvendigvis anvendt):\n{all_sources}"
     )
     return {"question_answered_da": state.question_answered_da}
 

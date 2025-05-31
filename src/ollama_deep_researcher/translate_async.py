@@ -12,9 +12,8 @@ from ollama_deep_researcher.state import SummaryState
 
 gc.enable()
 
-model = SentenceTransformer(
-            "dilovancelik/all-distilroberta-v1_danish_law_fine_tune"
-        )
+model = SentenceTransformer("dilovancelik/all-distilroberta-v1_danish_law_fine_tune")
+
 
 class SlidingWindowChunking:
     @classmethod
@@ -23,7 +22,7 @@ class SlidingWindowChunking:
         self.window_size = window_size
         self.step = step
         return self
-    
+
     async def chunk(self, text):
         words = text.split()
         chunks = []
@@ -39,7 +38,6 @@ class CosineSimilarityExtractor:
         self.query = query
         self.model = model
         return self
-        
 
     async def find_relevant_chunks(self, chunks):
         vectors = self.model.encode([self.query] + chunks)
@@ -47,7 +45,9 @@ class CosineSimilarityExtractor:
         return [(chunks[i], similarities[i]) for i in range(len(chunks))]
 
 
-async def chunk_and_give_relevent(content: str, state: SummaryState, cutoff: float = 0.1) -> str:
+async def chunk_and_give_relevent(
+    content: str, state: SummaryState, cutoff: float = 0.1
+) -> str:
 
     chunker = await SlidingWindowChunking.create(window_size=100, step=50)
     chunks = await chunker.chunk(content)
@@ -102,17 +102,22 @@ async def handel_suplementary_conten(
     # check if over char_limit
     test_content_len = suplementary_content.get("content", "")
     if len(test_content_len) > char_limit:
-        
+
         print("INFO- To long suplementary")
         print(f"    Len befor chunk: {len(test_content_len)}")
-        
+
         suplementary_content["content"] = await chunk_and_give_relevent(
             suplementary_content["content"], state
         )
-        
+
         if suplementary_content["content"] > char_limit:
-                  suplementary_content["content"] = await chunk_and_give_relevent(suplementary_content["content"], state, cutoff=0.2)
-                  
+            suplementary_content["content"] = await chunk_and_give_relevent(
+                suplementary_content["content"], state, cutoff=0.2
+            )
+
+        if len(suplementary_content["content"]) <= 0:
+            suplementary_content["content"] = "...[NO_CONTENT_AVAILABLE]"
+
         print(f"    Len after chunk: {len(source["content"])}")
 
     translated_suplementary_content = await translate_content_async(
@@ -155,16 +160,23 @@ async def handel_main_source(
 
     # check if over char_limit
     test_content_len = source.get("content", "")
-  
+
     if source["content"]:
         if len(test_content_len) > char_limit:
             print(f"INFO- To long main")
             print(f"    Len befor chunk: {len(test_content_len)}")
             source["content"] = await chunk_and_give_relevent(source["content"], state)
             if len(source["content"]) > char_limit:
-                source["content"] = await chunk_and_give_relevent(source["content"], state, cutoff=0.2)
+                source["content"] = await chunk_and_give_relevent(
+                    source["content"], state, cutoff=0.2
+                )
                 if len(source["content"]) > char_limit:
-                    source["content"] = await chunk_and_give_relevent(source["content"], state, cutoff=0.4)
+                    source["content"] = await chunk_and_give_relevent(
+                        source["content"], state, cutoff=0.4
+                    )
+            if len(source["content"]) <= 0:
+                source["content"] = "...[NO_CONTENT_AVAILABLE]"
+
             print(f"    Len after chunk: {len(source["content"])}")
 
     translated_main_content = await translate_content_async(
