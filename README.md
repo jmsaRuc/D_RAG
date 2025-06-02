@@ -1,30 +1,84 @@
-# Local Deep Researcher
+<a id="readme-top"></a>
 
-Local Deep Researcher is a fully local web research assistant that uses any LLM hosted by [Ollama](https://ollama.com/search) or [LMStudio](https://lmstudio.ai/). Give it a topic and it will generate a web search query, gather web search results, summarize the results of web search, reflect on the summary to examine knowledge gaps, generate a new search query to address the gaps, and repeat for a user-defined number of cycles. It will provide the user a final markdown summary with all sources used to generate the summary.
 
-![ollama-deep-research](https://github.com/user-attachments/assets/1c6b28f8-6b64-42ba-a491-1ab2875d50ea)
+<br />
+<div align="center">
+  <a href="https://github.com/othneildrew/Best-README-Template">
+    <img src="docs/icon.png" alt="Logo" width="160" height="160">
+  </a>
 
-Short summary video:
-<video src="https://github.com/user-attachments/assets/02084902-f067-4658-9683-ff312cab7944" controls></video>
+  <h3 align="center">Danish Retrieval-Augmented Generations</h3>
 
-## 📺 Video Tutorials
+  <p align="center">
+    A Danish legal Assistent, using all danish legal corpus as context.
+    <br />
+  </p>
+</div>
 
-See it in action or build it yourself? Check out these helpful video tutorials:
-- [Overview of Local Deep Researcher with R1](https://www.youtube.com/watch?v=sGUjmyfof4Q) - Load and test [DeepSeek R1](https://api-docs.deepseek.com/news/news250120) [distilled models](https://ollama.com/library/deepseek-r1).
-- [Building Local Deep Researcher from Scratch](https://www.youtube.com/watch?v=XGuTzHoqlj8) - Overview of how this is built.
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+    </li>
+    <li>
+      <a href="#pre-requisites">Pre-requisites</a>
+    </li>
+    <li>
+      <a href="#-quickstart">Quickstart</a>
+    </li>
+    <li>
+      <a href="#how-drag-works">How D_RAG Works</a>
+    </li>
+    <li>
+      <a href="#outputs">Outputs</a>
+    </li>
+    <li>
+      <a href="#running-drag-with-docker">Running D_RAG with Docker</a>
+    </li>
+    <li>
+      <a href="#acknowledgments">Acknowledgments</a>
+    </li>
+  </ol>
+</details>
+
+## About The Project
+
+[![Product Name Screen Shot][product-screenshot]](https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024)
+
+
+D_RAG is a spirituel fork of the LangChain repository [local-deep-researcher](https://github.com/langchain-ai/local-deep-researcher). It is a Danish law chat-bot, with a fully deployable API-stack built in Python.
+It takes danish questions about danish law, and answers them in Danish, with all of the danish legal corpus avalible on [retsinformation.dk](https://retsinformation.dk/) (around 145.555 tousand documents), as posible retrived context. It awnser in Danish, can be run in a local environment, using either Ollama or Groq as the OpenAI models. 
+
+*This project was made as part of a university asignment on Optimizing the Viability of Local Open Source LLMs For Danish Use Cases*
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## pre-requisites
+
+pre-requisites:
+- Python 3.11 or later
+- Poetry, see [Poetry installation guide](https://python-poetry.org/docs/#installation) 
+- for localy running models, install [Ollama](https://ollama.com/download)
+- for hosted models, either get a grop API key from [Groq](https://groq.com/) or a openai API key from [OpenAI](https://platform.openai.com/signup)
 
 ## 🚀 Quickstart
 
 Clone the repository:
 ```shell
-git clone https://github.com/langchain-ai/local-deep-researcher.git
-cd local-deep-researcher
+git clone https://github.com/jmsaRuc/D_RAG
+cd D_RAG
 ```
 
-Then edit the `.env` file to customize the environment variables according to your needs. These environment variables control the model selection, search tools, and other configuration settings. When you run the application, these values will be automatically loaded via `python-dotenv` (because `langgraph.json` point to the "env" file).
+
+
+Then edit the `.env` file to customize the environment variables according to your needs. These environment variables control the model selection, and other configuration settings, shuch as Api and research depth. 
+When you run the application, these values will be automatically loaded via `python-dotenv` (because `langgraph.json` points to the "env" file).
 ```shell
 cp .env.example .env
 ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Selecting local model with Ollama
 
@@ -32,7 +86,7 @@ cp .env.example .env
 
 2. Pull a local LLM from [Ollama](https://ollama.com/search). As an [example](https://ollama.com/library/deepseek-r1:8b):
 ```shell
-ollama pull deepseek-r1:8b
+ollama pull deepseek-r1:1.5b-qwen-distill-q8_0
 ```
 
 3. Optionally, update the `.env` file with the following Ollama configuration settings. 
@@ -40,80 +94,50 @@ ollama pull deepseek-r1:8b
 * If set, these values will take precedence over the defaults set in the `Configuration` class in `configuration.py`. 
 ```shell
 LLM_PROVIDER=ollama
-OLLAMA_BASE_URL="http://localhost:11434" # Ollama service endpoint, defaults to `http://localhost:11434` 
-LOCAL_LLM=model # the model to use, defaults to `llama3.2` if not set
+OPENAI_API_BASE="http://localhost:11434/" # Ollama service endpoint, defaults to `http://localhost:11434/` 
+LOCAL_LLM=deepseek-r1:1.5b-qwen-distill-q8_0 # the model to use, defaults to `deepseek-r1:1.5b-qwen-distill-q8_0` if not set
 ```
 
-### Selecting local model with LMStudio
 
-1. Download and install LMStudio from [here](https://lmstudio.ai/).
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-2. In LMStudio:
-   - Download and load your preferred model (e.g., qwen_qwq-32b)
-   - Go to the "Local Server" tab
-   - Start the server with the OpenAI-compatible API
-   - Note the server URL (default: http://localhost:1234/v1)
+### Selecting hosted model with Groq or OpenAI
+1. Get an API key from [Groq](https://groq.com/) or [OpenAI](https://platform.openai.com/signup).
+2. Update the `.env` file with the following configuration settings. If set, these values will take precedence over the defaults set in the `Configuration` class in `configuration.py`. 
 
-3. Optionally, update the `.env` file with the following LMStudio configuration settings. 
-
-* If set, these values will take precedence over the defaults set in the `Configuration` class in `configuration.py`. 
+#### Groq Configuration
 ```shell
-LLM_PROVIDER=lmstudio
-LOCAL_LLM=qwen_qwq-32b  # Use the exact model name as shown in LMStudio
-LMSTUDIO_BASE_URL=http://localhost:1234/v1
+LLM_PROVIDER=groq 
+GROQ_API_KEY=xxx # the Groq API key to use
+GROQ_API_BASE=https://api.groq.com/ # the Groq API base URL, defaults to `https://api.groq.com/`
+GROQ_LLM=deepseek-r1-distill-llama-70b # the Groq model to use, defaults to `deepseek-r1-distill-llama-70b`
 ```
-
-### Selecting search tool
-
-By default, it will use [DuckDuckGo](https://duckduckgo.com/) for web search, which does not require an API key. But you can also use [SearXNG](https://docs.searxng.org/), [Tavily](https://tavily.com/) or [Perplexity](https://www.perplexity.ai/hub/blog/introducing-the-sonar-pro-api) by adding their API keys to the environment file. Optionally, update the `.env` file with the following search tool configuration and API keys. If set, these values will take precedence over the defaults set in the `Configuration` class in `configuration.py`. 
+#### OpenAI Configuration
 ```shell
-SEARCH_API=xxx # the search API to use, such as `duckduckgo` (default)
-TAVILY_API_KEY=xxx # the tavily API key to use
-PERPLEXITY_API_KEY=xxx # the perplexity API key to use
-MAX_WEB_RESEARCH_LOOPS=xxx # the maximum number of research loop steps, defaults to `3`
-FETCH_FULL_PAGE=xxx # fetch the full page content (with `duckduckgo`), defaults to `false`
+LLM_PROVIDER=openai
+OPENAI_API_KEY=xxx # the OpenAI API key to use
+OPENAI_API_BASE=https://api.openai.com/v1/ # the OpenAI API base URL, defaults to `https://api.openai.com/v1/`
+OPENAI_MODEL=o3-mini # the OpenAI model to use, defaults to `o3-mini`
 ```
 
-### Running with LangGraph Studio
+### Running the Server
+To run the Local Deep Researcher application, you can need [Poetry](https://python-poetry.org/) 
+installed. Poetry is a dependency management tool for Python that simplifies the process of managing project dependencies and virtual environments.
 
-#### Mac
+Follow these steps:
+1. Install the required dependencies using Poetry:
 
-1. (Recommended) Create a virtual environment:
-```bash
-python -m venv .venv
-source .venv/bin/activate
+```shell
+poetry install
 ```
 
-2. Launch LangGraph server:
+2. Run the application using Poetry:
 
-```bash
-# Install uv package manager
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.11 langgraph dev
+```shell
+poetry run langgraph dev --allow-blocking --host 0.0.0.0
 ```
 
-#### Windows
-
-1. (Recommended) Create a virtual environment: 
-
-* Install `Python 3.11` (and add to PATH during installation). 
-* Restart your terminal to ensure Python is available, then create and activate a virtual environment:
-
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-
-2. Launch LangGraph server:
-
-```powershell
-# Install dependencies
-pip install -e .
-pip install -U "langgraph-cli[inmem]"            
-
-# Start the LangGraph server
-langgraph dev
-```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Using the LangGraph Studio UI
 
@@ -134,75 +158,85 @@ Open `LangGraph Studio Web UI` via the URL above. In the `configuration` tab, yo
 3. Default values in the Configuration class (lowest priority)
 ```
 
-<img width="1621" alt="Screenshot 2025-01-24 at 10 08 31 PM" src="https://github.com/user-attachments/assets/7cfd0e04-28fd-4cfa-aee5-9a556d74ab21" />
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-Give the assistant a topic for research, and you can visualize its process!
+## How D_RAG Works
 
-<img width="1621" alt="Screenshot 2025-01-24 at 10 08 22 PM" src="https://github.com/user-attachments/assets/4de6bd89-4f3b-424c-a9cb-70ebd3d45c5f" />
+D_RAG is an integrated solution that builds on two powerful approaches: Adamic RAG (A-RAG) and Confined Deep Research (CDR). The application is designed as a fully deployable API-stack written in Python, providing a Danish law chat-bot that leverages multiple language model sources to answer queries related to Danish law. 
 
-### Model Compatibility Note
+### Overview of the Nodes 
+The D_RAG graph consists of several nodes that work together to process user queries, perform searh and crawls of retsinformation, and generate answers. The nodes are designed to handle the entire workflow from question translation to final answer generation. Here’s a breakdown of the main nodes and their functions:
 
-When selecting a local LLM, set steps use structured JSON output. Some models may have difficulty with this requirement, and the assistant has fallback mechanisms to handle this. As an example, the [DeepSeek R1 (7B)](https://ollama.com/library/deepseek-llm:7b) and [DeepSeek R1 (1.5B)](https://ollama.com/library/deepseek-r1:1.5b) models have difficulty producing required JSON output, and the assistant will use a fallback mechanism to handle this.
-  
-### Browser Compatibility Note
+1. **Translate Question:**  
+    - The system translates the user's Danish question into English using the selected LLM.  
 
-When accessing the LangGraph Studio UI:
-- Firefox is recommended for the best experience
-- Safari users may encounter security warnings due to mixed content (HTTPS/HTTP)
-- If you encounter issues, try:
-  1. Using Firefox or another browser
-  2. Disabling ad-blocking extensions
-  3. Checking browser console for specific error messages
+2. **Generate Research Topic:**  
+    - With the translated question, the system generates multiple follow-up questions.  
+    - These questions form the research topic, shaping the subsequent search and analysis.
 
-## How it works
+3. **Generate Query:**  
+    - A Danish search query is produced based on the research topic.  
+    - It employs both a reversed translation example (A-RAG) and the original Danish semantic context (TAG) to ensure robust query formation.
 
-Local Deep Researcher is inspired by [IterDRAG](https://arxiv.org/html/2410.04343v1#:~:text=To%20tackle%20this%20issue%2C%20we,used%20to%20generate%20intermediate%20answers.). This approach will decompose a query into sub-queries, retrieve documents for each one, answer the sub-query, and then build on the answer by retrieving docs for the second sub-query. Here, we do similar:
-- Given a user-provided topic, use a local LLM (via [Ollama](https://ollama.com/search) or [LMStudio](https://lmstudio.ai/)) to generate a web search query
-- Uses a search engine / tool to find relevant sources
-- Uses LLM to summarize the findings from web search related to the user-provided research topic
-- Then, it uses the LLM to reflect on the summary, identifying knowledge gaps
-- It generates a new search query to address the knowledge gaps
-- The process repeats, with the summary being iteratively updated with new information from web search
-- Runs for a configurable number of iterations (see `configuration` tab)
+4. **Web Research:**  
+    - The generated Danish query is used in a search crawl pipeline to retrieve relevant sources.  
+    - The crawling logic is principally managed in the retsinfo_crawl.py module.
+
+5. **Translate Search Results:**  
+    - Retrieved Danish sources are asynchronously translated to English through chat-completion requests to the chosen LLM API.  
+    - The translation logic is implemented in translate_async.py.
+
+6. **Summarize Sources:**  
+    - For the first iteration, an English summary of the retrieved sources is created using the initial research topic.  
+    - In subsequent iterations, the summary is extended with new findings, maintaining continuity of the context.
+
+7. **Reflect on Summary:**  
+    - The complete English summary is analyzed to pinpoint knowledge gaps relative to the research topic.  
+    - A follow-up query in English is generated to address these gaps.  
+    - If the number of research cycles is below the user-defined maximum (default: 3), it proceeds to a content translation follow-up; otherwise, it advances to generate the final answer.
+
+8. **Translate Content Follow Up:**  
+    - The follow-up query is translated back into Danish using an A-TAG methodology.  
+    - This step leverages a previously translated Danish source alongside its English version for context.
+
+9. **Generates Final Answer:**  
+    - The final iteration of the English summary, combined with the user's original question (translated to English), is used to produce a comprehensive final answer in English.
+
+10. **Translate Answer:**  
+    - The final English answer is translated back into Danish using the same method as the Translate Content Follow Up step.
+
+11. **Finalized Answer:**  
+    - The system appends all source titles and URLs to the final translated answer.  
+    - A title is added to the answer along with a subtitle to the source list, providing a structured end result.
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Outputs
 
 The output of the graph is a markdown file containing the research summary, with citations to the sources used. All sources gathered during research are saved to the graph state. You can visualize them in the graph state, which is visible in LangGraph Studio:
 
-![Screenshot 2024-12-05 at 4 08 59 PM](https://github.com/user-attachments/assets/e8ac1c0b-9acb-4a75-8c15-4e677e92f6cb)
+(indest her billede)
 
 The final summary is saved to the graph state as well:
 
-![Screenshot 2024-12-05 at 4 10 11 PM](https://github.com/user-attachments/assets/f6d997d5-9de5-495f-8556-7d3891f6bc96)
+(indset her billede)
 
-## Deployment Options
 
-There are [various ways](https://langchain-ai.github.io/langgraph/concepts/#deployment-options) to deploy this graph. See [Module 6](https://github.com/langchain-ai/langchain-academy/tree/main/module-6) of LangChain Academy for a detailed walkthrough of deployment options with LangGraph.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## TypeScript Implementation
+## Running D_RAG with Docker
 
-A TypeScript port of this project (without Perplexity search) is available at:
-https://github.com/PacoVK/ollama-deep-researcher-ts
+To run D_RAG in a Docker container, you can use the provided Docker Compose file. This allows you to encapsulate the environment and dependencies, making it easier to deploy and run the application consistently across different systems.
 
-## Running as a Docker container
-
-The included `Dockerfile` only runs LangChain Studio with local-deep-researcher as a service, but does not include Ollama as a dependant service. You must run Ollama separately and configure the `OLLAMA_BASE_URL` environment variable. Optionally you can also specify the Ollama model to use by providing the `LOCAL_LLM` environment variable.
-
-Clone the repo and build an image:
+1. Ensure you have Docker and Docker Compose installed on your machine.
+2. Create a `.env` file in the root directory of the project, based on the `.env.example` file, and fill in your API keys and other configurations as needed.
+3. Run the following command to build and start the Docker container:
+```bash
+docker compose --env-file .env up --build
 ```
-$ docker build -t local-deep-researcher .
-```
-
-Run the container:
-```
-$ docker run --rm -it -p 2024:2024 \
-  -e SEARCH_API="tavily" \ 
-  -e TAVILY_API_KEY="tvly-***YOUR_KEY_HERE***" \
-  -e LLM_PROVIDER=ollama
-  -e OLLAMA_BASE_URL="http://host.docker.internal:11434/" \
-  -e LOCAL_LLM="llama3.2" \  
-  local-deep-researcher
-```
+4. Once the container is running, you can access the application via the URL provided in the terminal output, typically `http://localhost:2024`.
+5. You can also access the LangGraph Studio UI at `https://smith.langchain.com/studio/?baseUrl=http://localhost:2024`.
 
 NOTE: You will see log message:
 ```
@@ -214,39 +248,16 @@ URL: https://smith.langchain.com/studio/?baseUrl=http://0.0.0.0:2024
 Instead, visit this link with the correct baseUrl IP address: [`https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.la1:2024`](https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.1:2024)
 
 
-## misc.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Acknowledgments
+
+* [local-deep-researcher](https://github.com/langchain-ai/local-deep-researcher)
+* [Crawl4Ai](https://github.com/unclecode/crawl4ai)
 
 
-### Running with Docker Compose ollama
-```bash
-docker compose --env-file .env up --build 
-```
-### down 
-```bash
-docker compose --env-file .env down
-```
-## ollama .env
-```.env
-LLM_PROVIDER=ollama
-OLLAMA_BASE_URL=http://host.docker.internal:21434
-LOCAL_LLM=deepseek-r1:1.5b-qwen-distill-fp16
-TAVILY_API_KEY=<your_tavily_api_key>
-MAX_WEB_RESEARCH_LOOPS=3
-FETCH_FULL_PAGE=True
-SEARCH_API=tavily
+<a href="https://github.com/unclecode/crawl4ai">
+  <img src="https://raw.githubusercontent.com/unclecode/crawl4ai/main/docs/assets/powered-by-disco.svg" alt="Powered by Crawl4AI" width="200"/>
+</a>
 
-LANGSMITH_API_KEY=<your_langsmith_api_key>
-```
-
-## groq_api .env
-```.env
-LLM_PROVIDER=groq
-GROQ_LLM=deepseek-r1-distill-llama-70b
-GROQ_API_KEY=<your_groq_api_key>
-TAVILY_API_KEY=<your_tavily_api_key>
-MAX_WEB_RESEARCH_LOOPS=3
-FETCH_FULL_PAGE=True
-SEARCH_API=tavily
-LANGSMITH_API_KEY=<your_langsmith_api_key>
-GROQ_API_BASE=https://api.groq.com/
-```
+[product-screenshot]: docs/exemple_afsvar.png
