@@ -1,7 +1,7 @@
 [project]
 name = "ollama-deep-researcher"
 version = "0.0.2"
-description = "Fully local web research and summarization assistant with Ollama and LangGraph."
+description = "Danish legal research assistent utilizing and iteration on deep research, using either Ollama or Groq as the LLM backend."
 authors = [
     { name = "Lance Martin" }
 ]

@@ -24,7 +24,7 @@ class Configuration(BaseModel):
         description="Number of research iterations to perform",
     )
     local_llm: str = Field(
-        default="llama3.2",
+        default="deepseek-r1:1.5b-qwen-distill-q8_0",
         title="LLM Model Name",
         description="Name of the LLM model to use",
     )
@@ -34,7 +34,7 @@ class Configuration(BaseModel):
         description="Name of the GROQ LLM model to use",
     )
     openai_llm: str = Field(
-        default="o4-mini",
+        default="o3-mini",
         title="OpenAI LLM Model Name",
         description="Name of the OpenAI LLM model to use",
     )
