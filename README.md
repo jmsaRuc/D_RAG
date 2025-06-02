@@ -54,7 +54,7 @@ It takes danish questions about danish law, and answers them in Danish, with all
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## pre-requisites
+## Pre-requisites
 
 pre-requisites:
 - Python 3.11 or later
