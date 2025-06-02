@@ -44,7 +44,8 @@ async def format_sources(search_results: Dict[str, Any]) -> str:
     Format search results into a bullet-point list of sources with URLs.
 
     Creates a bulleted list of search results with title and URL for each source.
-    Additionally, if a source has supplementary content, it includes these entries indented
+    Additionally, if a source has supplementary content,
+    it includes these entries indented
     beneath the main source.
 
     Args:
@@ -52,7 +53,8 @@ async def format_sources(search_results: Dict[str, Any]) -> str:
                                          a list of search result objects.
 
     Returns:
-        str: Formatted string with sources as bullet points. Main sources are formatted as
+        str: Formatted string with sources as bullet points.
+            Main sources are formatted as
              "* title : url" and supplementary sources as "  * title : url".
     """
     lines = []
@@ -75,6 +77,6 @@ async def format_sources(search_results: Dict[str, Any]) -> str:
                         == "Alle bekendtgørelser m.v. og cirkulærer m.v. til denne lov"
                     ):
                         lines.append(
-                            f"  * {supplementary['title']} : {supplementary['url']}"
+                            f"  * {supplementary['title']} : {supplementary['url']}",
                         )
     return "\n".join(lines)
