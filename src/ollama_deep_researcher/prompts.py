@@ -1,9 +1,4 @@
-from datetime import datetime
-
-# Get current date in a readable format
-async def get_current_date():
-    return datetime.now().strftime("%B %d, %Y")
-
+# Prompts for the Ollama Deep Researcher
 
 
 translate_qustion_instructions = """
@@ -26,10 +21,10 @@ The translation should be accurate, fluent, and maintain the original meaning of
 <Task>
 Translate the following text from Danish to English.
 </Task>
-"""
+"""  # noqa: E501
 
 translate_texts_instructions = """
-<GOAL>
+<GOAL>https://docs.astral.sh/ruff/rules/line-too-long
 Generate a high-quality translation of multiple texts from Danish to English.
 The translation should be accurate, fluent, and maintain the original meaning of the text.
 </GOAL>
@@ -48,7 +43,7 @@ The translation should be accurate, fluent, and maintain the original meaning of
 <Task>
 Translate the following texts from Danish to English.
 </Task>
-"""
+"""  # noqa: E501
 
 research_topic_write_instructions = """You are an expert legal assistant analyzing a complex user question to find knowledge gaps, and creating follow-up questions to fill those gaps.
 <CONTEXT>
@@ -93,9 +88,9 @@ Reflect carefully on the user question to identify knowledge gaps and produce fo
 }}
 </Task>
 
-Provide your response in JSON format:"""
+Provide your response in JSON format:"""  # noqa: E501
 
-query_writer_instructions_with_tag="""Your goal is to generate a targeted search query in Danish. Used for searching a law database, the qurry should only contain keywords.
+query_writer_instructions_with_tag = """Your goal is to generate a targeted search query in Danish. Used for searching a law database, the qurry should only contain keywords.
 
 <CONTEXT>
 The query should be relevant to the legal field and should be able to retrieve information from a law database.
@@ -136,15 +131,15 @@ Format your response as a JSON object with ALL two of these exact keys:
 
 <EXAMPLE>
 Example output:
-{{ 
+{{
     "query": "Justitsministeren indsamlinger juridiske bestemmelser",
     "rationale": "Understanding what the Minister of Justice can determine in the legal context of collectionss"
 }}
 </EXAMPLE>
 
-Provide your response in JSON format:"""
+Provide your response in JSON format:"""  # noqa: E501
 
-summarizer_instructions="""
+summarizer_instructions = """
 <GOAL>
 Generate a high-quality summary of the provided context.
 Use citation in the summary, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause).
@@ -157,27 +152,27 @@ When creating a NEW summary:
 4. Use citation in the summary, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause).
 5. When using sources in the summary, include the title of the sources in the citation.
 
-When EXTENDING an existing summary:                                                                                                                 
-1. Read the existing summary and new search results carefully.                                                    
-2. Compare the new information with the existing summary.                                                         
-3. For each piece of new information:                                                                             
-    a. If it's related to existing points, integrate it into the relevant paragraph.                               
-    b. If it's entirely new but relevant, add a new paragraph with a smooth transition.                            
-    c. If it's not relevant to the user topic, skip it.                                                            
-4. Ensure all additions are relevant to the user's topic.                                                         
+When EXTENDING an existing summary:
+1. Read the existing summary and new search results carefully.
+2. Compare the new information with the existing summary.
+3. For each piece of new information:
+    a. If it's related to existing points, integrate it into the relevant paragraph.
+    b. If it's entirely new but relevant, add a new paragraph with a smooth transition.
+    c. If it's not relevant to the user topic, skip it.
+4. Ensure all additions are relevant to the user's topic.
 5. Use citation in the summary, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause).
 7. Verify that your final output differs from the input summary.
 8. If you have nothing to add to the existing summary, respond with a copy of it
 <REQUIREMENTS>
 
 < FORMATTING >
-- Start directly with the updated summary, without preamble or titles. Do not use XML tags in the output.  
+- Start directly with the updated summary, without preamble or titles. Do not use XML tags in the output.
 < /FORMATTING >
 
 <Task>
 Think carefully about the provided Context first. Then generate a summary of the context to address the User Input. Use citation in the summary, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause).
 </Task>
-"""
+"""  # noqa: E501
 
 reflection_instructions = """You are an expert research assistant analyzing a summary to find knowledge gaps, and creating a follow-up seach qurry to fill those gaps, the qurry should only contain keywords.
 
@@ -235,7 +230,7 @@ Produce your output following this JSON format:
 Reflect carefully on the Summary to identify knowledge gaps and produce a follow-up database query to fill those gaps.
 </Task>
 
-Provide your analysis in JSON format:"""
+Provide your analysis in JSON format:"""  # noqa: E501
 
 final_answer_instructions = """You are an expert legal assistant analyzing a summery to answer a users legal question.
 <CONTEXT>
@@ -268,10 +263,10 @@ When using sources from the summary, include the title of the sources in the cit
 <TASK>
 Think carefully about the provided Context first. Then generate a final answer to the user's question based on the summary provided, when using sources from the summary to answer, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause), as citation.
 </TASK>
-"""
+"""  # noqa: E501
 
 translate_texts_whith_ex_instructions = """
-   
+
 <GOAL>
 Generate a high-quality translation of the given text from English to Danish.
 The translation should be accurate, fluent, and maintain the original meaning of the text.
@@ -302,4 +297,4 @@ The English text translated to Danish:
 <Task>
 Translate the following text from English to Danish.
 </Task>
-"""
+"""  # noqa: E501

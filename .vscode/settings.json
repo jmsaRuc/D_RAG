@@ -1,0 +1,9 @@
+{
+    "mypy.runUsingActiveInterpreter": true,
+    "mypy.targets": [
+        "./src/ollama_deep_researcher"
+    ],
+    "ruff.exclude": [
+        "./notebooks"
+    ]
+}
