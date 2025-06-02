@@ -745,8 +745,8 @@ builder.add_node("translate_search_results", translate_search_results)
 builder.add_node("summarize_sources", summarize_sources)
 builder.add_node("reflect_on_summary", reflect_on_summary)
 builder.add_node("translate_content_follow_up", translate_content_follow_up)
-builder.add_node("translate_answer", translate_answer)
 builder.add_node("generate_final_answer", generate_final_answer)
+builder.add_node("translate_answer", translate_answer)
 builder.add_node("finalize_answer", finalize_answer)
 
 # Add edges

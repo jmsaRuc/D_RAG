@@ -24,4 +24,4 @@ class SummaryStateInput:
 
 @dataclass(kw_only=True)
 class SummaryStateOutput:
-    question_answer_da: str = field(default=None) # Final report
+    question_answered_da: str = field(default=None) # Final report
