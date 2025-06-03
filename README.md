@@ -10,7 +10,7 @@
   <h3 align="center">Danish Retrieval Augmented Generations</h3>
 
   <p align="center">
-    A Danish legal Assistent, using all danish legal corpus as context, a test on llms in danish use cases.
+    A Danish legal Assistent, using all danish legal corpus as context. A test for llms in danish use cases.
     <br />
   </p>
 </div>
