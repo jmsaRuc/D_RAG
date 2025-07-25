@@ -119,6 +119,25 @@ OPENAI_MODEL=o3-mini # the OpenAI model to use, defaults to `o3-mini`
 ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Running the Server
+To run the Local Deep Researcher application, you can need [Poetry](https://python-poetry.org/) 
+installed. Poetry is a dependency management tool for Python that simplifies the process of managing project dependencies and virtual environments.
+
+Follow these steps:
+1. Install the required dependencies using Poetry:
+
+```shell
+poetry install
+```
+
+2. Run the application using Poetry:
+
+```shell
+poetry run langgraph dev --allow-blocking --host 0.0.0.0
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### Running D_RAG with Docker
 
 To run D_RAG in a Docker container, you can use the provided Docker Compose file. This allows you to encapsulate the environment and dependencies, making it easier to deploy and run the application consistently across different systems.
@@ -141,25 +160,6 @@ URL: https://smith.langchain.com/studio/?baseUrl=http://0.0.0.0:2024
 
 Instead, visit this link with the correct baseUrl IP address: [`https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.la1:2024`](https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.1:2024)
 
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-### Running the Server
-To run the Local Deep Researcher application, you can need [Poetry](https://python-poetry.org/) 
-installed. Poetry is a dependency management tool for Python that simplifies the process of managing project dependencies and virtual environments.
-
-Follow these steps:
-1. Install the required dependencies using Poetry:
-
-```shell
-poetry install
-```
-
-2. Run the application using Poetry:
-
-```shell
-poetry run langgraph dev --allow-blocking --host 0.0.0.0
-```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -245,31 +245,6 @@ The output of the graph is a markdown file containing the research summary, with
 The final summary is saved to the graph state as well:
 
 (indset her billede)
-
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Running D_RAG with Docker
-
-To run D_RAG in a Docker container, you can use the provided Docker Compose file. This allows you to encapsulate the environment and dependencies, making it easier to deploy and run the application consistently across different systems.
-
-1. Ensure you have Docker and Docker Compose installed on your machine.
-2. Create a `.env` file in the root directory of the project, based on the `.env.example` file, and fill in your API keys and other configurations as needed.
-3. Run the following command to build and start the Docker container:
-```bash
-docker compose --env-file .env up --build
-```
-4. Once the container is running, you can access the application via the URL provided in the terminal output, typically `http://localhost:2024`.
-5. You can also access the LangGraph Studio UI at `https://smith.langchain.com/studio/?baseUrl=http://localhost:2024`.
-
-NOTE: You will see log message:
-```
-2025-02-10T13:45:04.784915Z [info     ] 🎨 Opening Studio in your browser... [browser_opener] api_variant=local_dev message=🎨 Opening Studio in your browser...
-URL: https://smith.langchain.com/studio/?baseUrl=http://0.0.0.0:2024
-```
-...but the browser will not launch from the container.
-
-Instead, visit this link with the correct baseUrl IP address: [`https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.la1:2024`](https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.1:2024)
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
