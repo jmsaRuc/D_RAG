@@ -337,7 +337,7 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
                     f"Id: {id}, URL: {url}, Error: {result.error_message!s}",
                 )
                 log.warning(
-                    f"URL Macthing Id: {id_url_pair_v[id]}",
+                    f"URL Macthing Id: {id_url_pair_v[id]}",  # noqa: PLR1733
                 )
                 end_results[id] = result
                 break
