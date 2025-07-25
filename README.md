@@ -80,7 +80,7 @@ cp .env.example .env
 
 ### Selecting model :performing_arts:
 
-**Choose from either locally or remotely hosted.**
+Choose from either locally or remotely hosted.
 
 #### Selecting local model with Ollama
 
