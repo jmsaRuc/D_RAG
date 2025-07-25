@@ -1,9 +1,8 @@
 <a id="readme-top"></a>
 
-
 <br />
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
+  <a href="https://github.com/jmsaRuc/D_RAG">
     <img src="docs/icon.png" alt="Logo" width="160" height="160">
   </a>
 
@@ -11,9 +10,15 @@
 
   <p align="center">
     An example of Danish Retrieval Augmented Generation using open-source tools and models: 
-    A Danish legal Assistant, using 146.237 thousand Danish legal documents as context. Made as part of a university project: "Optimizing the Viability of Local Open Source LLMs For Danish Use Cases"
+    A Danish legal Assistant, using 146.237 thousand Danish legal documents as context. Made as part of a university project: 
+    "Optimizing the Viability of Local Open Source LLMs For Danish Use Cases"
     <br />
   </p>
+
+[![Contributors][contributors-shield]][contributors-url]
+[![Apache-2.0 license][license-shield]][license-url]
+[![LinkedIn][linkedin-shield]][linkedin-url]
+
 </div>
 
 <details>
@@ -250,6 +255,13 @@ The final summary is saved to the graph state as well:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Contributors: :wrench:
+
+<a href="https://github.com/jmsaRuc/D_RAG/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jmsaRuc/D_RAG" alt="contrib.rocks image" />
+</a>
+
+
 ## Acknowledgments :clap:
 
 * [local-deep-researcher](https://github.com/langchain-ai/local-deep-researcher)
@@ -260,4 +272,16 @@ The final summary is saved to the graph state as well:
   <img src="https://raw.githubusercontent.com/unclecode/crawl4ai/main/docs/assets/powered-by-disco.svg" alt="Powered by Crawl4AI" width="200"/>
 </a>
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/jmsaRuc/D_RAG.svg?style=for-the-badge
+[contributors-url]: https://github.com/jmsaRuc/D_RAG/graphs/contributors
+[license-shield]: https://img.shields.io/github/license/jmsaRuc/D_RAG.svg?style=for-the-badge
+[license-url]: https://github.com/jmsaRuc/D_RAG/blob/master/LICENSE.txt
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-url]: https://linkedin.com/in/othneildrew
 [product-screenshot]: docs/exemple_afsvar.png
+
+
