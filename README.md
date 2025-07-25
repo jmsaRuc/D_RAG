@@ -46,7 +46,7 @@
 
 
 D_RAG is a spirituel fork of the LangChain repository [local-deep-researcher](https://github.com/langchain-ai/local-deep-researcher). It is a Danish law chat-bot, with a fully deployable API-stack built in Python.
-It takes danish questions about danish law, and answers them in Danish, with all of the danish legal corpus avalible on [retsinformation.dk](https://retsinformation.dk/) (around 145.555 tousand documents), as posible retrived context. It awnser in Danish, can be run in a local environment, using either Ollama or Groq as the OpenAI models. 
+It takes danish questions about danish law, and answers them in Danish, using 146.237 thousand Danish legal documents, avalible on [retsinformation.dk](https://retsinformation.dk/), as posible retrived context. It awnser in Danish, can be run in a local environment, using either Ollama or Groq as the OpenAI models. 
 
 *This project was made as part of a university asignment on Optimizing the Viability of Local Open Source LLMs For Danish Use Cases*
 
