@@ -3,7 +3,7 @@ volumes:
         driver: local
 services:
     langgraph-redis:
-        image: redis:6
+        image: redis:8
         healthcheck:
             test: redis-cli ping
             interval: 5s
@@ -11,7 +11,7 @@ services:
             retries: 5
 
     langgraph-postgres:
-        image: postgres:16
+        image: postgres:17
         ports:
             - "5433:5432"
         environment:
