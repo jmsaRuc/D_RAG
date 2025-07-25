@@ -10,7 +10,8 @@
   <h3 align="center">Danish Retrieval Augmented Generations</h3>
 
   <p align="center">
-    A Danish legal Assistent, using all danish legal corpus as context. A test for llms in danish use cases.
+    An example of Danish Retrieval Augmented Generation using open-source tools and models: 
+    A Danish legal Assistant, using 146.237 thousand Danish legal documents as context. Made as part of a university project: "Optimizing the Viability of Local Open Source LLMs For Danish Use Cases"
     <br />
   </p>
 </div>
@@ -32,9 +33,6 @@
     </li>
     <li>
       <a href="#outputs">Outputs</a>
-    </li>
-    <li>
-      <a href="#running-drag-with-docker">Running D_RAG with Docker</a>
     </li>
     <li>
       <a href="#acknowledgments">Acknowledgments</a>
@@ -119,6 +117,32 @@ OPENAI_API_KEY=xxx # the OpenAI API key to use
 OPENAI_API_BASE=https://api.openai.com/v1/ # the OpenAI API base URL, defaults to `https://api.openai.com/v1/`
 OPENAI_MODEL=o3-mini # the OpenAI model to use, defaults to `o3-mini`
 ```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Running D_RAG with Docker
+
+To run D_RAG in a Docker container, you can use the provided Docker Compose file. This allows you to encapsulate the environment and dependencies, making it easier to deploy and run the application consistently across different systems.
+
+1. Ensure you have Docker and Docker Compose installed on your machine.
+2. Create a `.env` file in the root directory of the project, based on the `.env.example` file, and fill in your API keys and other configurations as needed.
+3. Run the following command to build and start the Docker container:
+```bash
+docker compose --env-file .env up --build
+```
+4. Once the container is running, you can access the application via the URL provided in the terminal output, typically `http://localhost:2024`.
+5. You can also access the LangGraph Studio UI at `https://smith.langchain.com/studio/?baseUrl=http://localhost:2024`.
+
+NOTE: You will see log message:
+```
+2025-02-10T13:45:04.784915Z [info     ] 🎨 Opening Studio in your browser... [browser_opener] api_variant=local_dev message=🎨 Opening Studio in your browser...
+URL: https://smith.langchain.com/studio/?baseUrl=http://0.0.0.0:2024
+```
+...but the browser will not launch from the container.
+
+Instead, visit this link with the correct baseUrl IP address: [`https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.la1:2024`](https://smith.langchain.com/studio/thread?baseUrl=http://127.0.0.1:2024)
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Running the Server
 To run the Local Deep Researcher application, you can need [Poetry](https://python-poetry.org/) 
