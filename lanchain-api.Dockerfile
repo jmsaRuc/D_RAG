@@ -1,4 +1,5 @@
-FROM --platform=$BUILDPLATFORM python:3.12-slim-bookworm AS builder
+FROM --platform=$BUILDPLATFORM python:3.13-slim-bookworm AS prod
+
 
 ARG APP_HOME=/app
 
