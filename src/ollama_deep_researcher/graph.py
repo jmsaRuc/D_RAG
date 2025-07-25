@@ -556,7 +556,7 @@ async def translate_content_follow_up(
 
     # set the char limit for the translation
     char_limit = 12000 * 3
-    char_limit = round(char_limit)
+    char_limit = round(char_limit)  # noqa: RUF057
 
     # Check if the tate.question_en is set
     if not state.question_da:
@@ -762,7 +762,7 @@ async def translate_answer(
 
     # get the char limit for the translation
     char_limit = 12000 * 3
-    char_limit = round(char_limit)
+    char_limit = round(char_limit)  # noqa: RUF057
 
     # Check if the state.question_answered_en is set
     if not state.question_da:
@@ -931,7 +931,7 @@ builder = StateGraph(
     input=SummaryStateInput,
     output=SummaryStateOutput,
     config_schema=Configuration,
-)
+)  # type: ignore[call-arg]
 builder.add_node("translate_question", translate_question)
 builder.add_node("generate_research_topic", generate_research_topic)
 builder.add_node("generate_query", generate_query)

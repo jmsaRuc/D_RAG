@@ -162,15 +162,15 @@ When EXTENDING an existing summary:
 4. Ensure all additions are relevant to the user's topic.
 5. Use citation in the summary, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause).
 7. Verify that your final output differs from the input summary.
-8. If you have nothing to add to the existing summary, respond with a copy of it
-<REQUIREMENTS>
+8. If you have nothing to add to the existing summary, respond with a copy of the existing summary without changes.
+</REQUIREMENTS>
 
 < FORMATTING >
 - Start directly with the updated summary, without preamble or titles. Do not use XML tags in the output.
 < /FORMATTING >
 
 <Task>
-Think carefully about the provided Context first. Then generate a summary of the context to address the User Input. Use citation in the summary, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause).
+Think carefully about the provided Context first. Then generate a summary of the context to address the User Input. Use citation in the summary, use title, chapter, paragraph, and clause (§=paragraph, stk.=clause). If you have nothing to add to the existing summary, respond with a copy of the existing summary without changes.
 </Task>
 """  # noqa: E501
 
