@@ -1,0 +1,38 @@
+MIT License
+
+Copyright (c) 2025 Jens Mikkel 
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+Attribution Requirement
+
+All distributions, publications, or public uses of this software, or derivative works based on this software, must include the following attribution:
+
+"This product includes software developed by Jens Mikkel (www.linkedin.com/in/jens-mikkel-andersen-0b0b57256) as part of the D_RAG project (https://github.com/jmsaRuc/D_RAG)."
+
+This attribution must be displayed in a prominent and easily accessible location, such as:
+
+-   For software distributions: In a NOTICE file, README file, or equivalent documentation.
+-   For publications (research papers, articles, blog posts): In the acknowledgments section or a footnote.
+-   For websites/web applications: In an "About" or "Credits" section.
+-   For command-line tools: In the help/usage output.
+
+This requirement ensures proper credit is given for the use of D_RAG and helps promote the project.
+---
