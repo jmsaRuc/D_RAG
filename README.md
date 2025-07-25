@@ -20,7 +20,7 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">About The Project</a>
+      <a href="#about-the-project">About The Project :newspaper:</a>
     </li>
     <li>
       <a href="#pre-requisites">Pre-requisites</a>
