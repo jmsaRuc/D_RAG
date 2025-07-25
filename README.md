@@ -40,7 +40,7 @@
   </ol>
 </details>
 
-## About The Project
+## About The Project :mag:
 
 [![Product Name Screen Shot][product-screenshot]](https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024)
 
@@ -52,7 +52,7 @@ It takes danish questions about danish law, and answers them in Danish, with all
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Pre-requisites
+## Pre-requisites :white_check_mark: 
 
 pre-requisites:
 - Python 3.11 or later
@@ -60,7 +60,7 @@ pre-requisites:
 - for localy running models, install [Ollama](https://ollama.com/download)
 - for hosted models, either get a grop API key from [Groq](https://groq.com/) or a openai API key from [OpenAI](https://platform.openai.com/signup)
 
-## 🚀 Quickstart
+## Quickstart :rocket:
 
 Clone the repository:
 ```shell
@@ -78,7 +78,11 @@ cp .env.example .env
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Selecting local model with Ollama
+### Selecting model :performing_arts:
+
+**Choose from either locally or remotely hosted.**
+
+#### Selecting local model with Ollama
 
 1. Download the Ollama app for Mac [here](https://ollama.com/download).
 
@@ -96,10 +100,7 @@ OPENAI_API_BASE="http://localhost:11434/" # Ollama service endpoint, defaults to
 LOCAL_LLM=deepseek-r1:1.5b-qwen-distill-q8_0 # the model to use, defaults to `deepseek-r1:1.5b-qwen-distill-q8_0` if not set
 ```
 
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-### Selecting hosted model with Groq or OpenAI
+#### Selecting hosted model with Groq or OpenAI
 1. Get an API key from [Groq](https://groq.com/) or [OpenAI](https://platform.openai.com/signup).
 2. Update the `.env` file with the following configuration settings. If set, these values will take precedence over the defaults set in the `Configuration` class in `configuration.py`. 
 
@@ -119,7 +120,7 @@ OPENAI_MODEL=o3-mini # the OpenAI model to use, defaults to `o3-mini`
 ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Running the Server
+### Running the Server :satellite:
 To run the Local Deep Researcher application, you can need [Poetry](https://python-poetry.org/) 
 installed. Poetry is a dependency management tool for Python that simplifies the process of managing project dependencies and virtual environments.
 
@@ -138,7 +139,7 @@ poetry run langgraph dev --allow-blocking --host 0.0.0.0
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Running D_RAG with Docker
+### Running D_RAG with Docker :whale:
 
 To run D_RAG in a Docker container, you can use the provided Docker Compose file. This allows you to encapsulate the environment and dependencies, making it easier to deploy and run the application consistently across different systems.
 
@@ -163,7 +164,7 @@ Instead, visit this link with the correct baseUrl IP address: [`https://smith.la
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Using the LangGraph Studio UI
+### Using the LangGraph Studio UI :pager:
 
 When you launch LangGraph server, you should see the following output and Studio will open in your browser:
 > Ready!
@@ -184,7 +185,7 @@ Open `LangGraph Studio Web UI` via the URL above. In the `configuration` tab, yo
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## How D_RAG Works
+## How D_RAG Works :microscope:
 
 D_RAG is an integrated solution that builds on two powerful approaches: Adamic RAG (A-RAG) and Confined Deep Research (CDR). The application is designed as a fully deployable API-stack written in Python, providing a Danish law chat-bot that leverages multiple language model sources to answer queries related to Danish law. 
 
@@ -236,7 +237,7 @@ The D_RAG graph consists of several nodes that work together to process user que
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Outputs
+## Outputs :open_file_folder:
 
 The output of the graph is a markdown file containing the research summary, with citations to the sources used. All sources gathered during research are saved to the graph state. You can visualize them in the graph state, which is visible in LangGraph Studio:
 
@@ -249,7 +250,7 @@ The final summary is saved to the graph state as well:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Acknowledgments
+## Acknowledgments :clap:
 
 * [local-deep-researcher](https://github.com/langchain-ai/local-deep-researcher)
 * [Crawl4Ai](https://github.com/unclecode/crawl4ai)
