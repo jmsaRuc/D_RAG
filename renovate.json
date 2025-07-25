@@ -3,6 +3,8 @@
   "extends": [
     "config:recommended"
   ],
-  "groupName": "all",
+  "packageRules": [
+    "groupName": ["all"]
+  ],
   "baseBranchPatterns": ["dev"]
 }
