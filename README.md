@@ -23,19 +23,19 @@
       <a href="#about-the-project">About The Project :newspaper:</a>
     </li>
     <li>
-      <a href="#pre-requisites">Pre-requisites</a>
+      <a href="#pre-requisites">Pre-requisites :white_check_mark:</a>
     </li>
     <li>
-      <a href="#-quickstart">Quickstart</a>
+      <a href="#-quickstart">Quickstart :rocket:</a>
     </li>
     <li>
-      <a href="#how-drag-works">How D_RAG Works</a>
+      <a href="#how-drag-works">How D_RAG Works :microscope:</a>
     </li>
     <li>
-      <a href="#outputs">Outputs</a>
+      <a href="#outputs">Outputs :speech_balloon:</a>
     </li>
     <li>
-      <a href="#acknowledgments">Acknowledgments</a>
+      <a href="#acknowledgments">Acknowledgments :clap:</a>
     </li>
   </ol>
 </details>
