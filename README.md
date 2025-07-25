@@ -7,18 +7,20 @@
   </a>
 
   <h3 align="center">Danish Retrieval Augmented Generations</h3>
+  
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Apache-2.0 license][license-shield]][license-url]
+[![LinkedIn][linkedin-shield]][linkedin-url]
 
+---
   <p align="center">
     An example of Danish Retrieval Augmented Generation using open-source tools and models: 
     A Danish legal Assistant, using 146.237 thousand Danish legal documents as context. Made as part of a university project: 
     "Optimizing the Viability of Local Open Source LLMs For Danish Use Cases"
-    <br />
+    <br/>
   </p>
-
-[![Contributors][contributors-shield]][contributors-url]
-[![Apache-2.0 license][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-
 </div>
 
 <details>
@@ -281,10 +283,14 @@ The final summary is saved to the graph state as well:
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/jmsaRuc/D_RAG.svg?style=for-the-badge
 [contributors-url]: https://github.com/jmsaRuc/D_RAG/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/jmsaRuc/D_RAG.svg?style=for-the-badge
+[forks-url]: https://github.com/jmsaRuc/D_RAG/network/members
+[stars-shield]: https://img.shields.io/github/stars/jmsaRuc/D_RAG.svg?style=for-the-badge
+[stars-url]: https://github.com/jmsaRuc/D_RAG/stargazers
 [license-shield]: https://img.shields.io/github/license/jmsaRuc/D_RAG.svg?style=for-the-badge
 [license-url]: https://github.com/jmsaRuc/D_RAG/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/othneildrew
+[linkedin-url]: www.linkedin.com/in/jens-mikkel-andersen-0b0b57256
 [product-screenshot]: docs/exemple_afsvar.png
 
 
