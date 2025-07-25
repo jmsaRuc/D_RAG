@@ -8,7 +8,13 @@
 
   <h3 align="center">Danish Retrieval Augmented Generations</h3>
 
-  
+   <p align="center">
+    An example of Danish Retrieval Augmented Generation using open-source tools and models: 
+    A Danish legal Assistant, using 146.237 thousand Danish legal documents as context. Made as part of a university project: 
+    "Optimizing the Viability of Local Open Source LLMs For Danish Use Cases"
+    <br/>
+  </p>
+
 --- 
 
 [![Contributors][contributors-shield]][contributors-url]
@@ -17,12 +23,6 @@
 [![Apache-2.0 license][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
-  <p align="center">
-    An example of Danish Retrieval Augmented Generation using open-source tools and models: 
-    A Danish legal Assistant, using 146.237 thousand Danish legal documents as context. Made as part of a university project: 
-    "Optimizing the Viability of Local Open Source LLMs For Danish Use Cases"
-    <br/>
-  </p>
 </div>
 
 <details>
