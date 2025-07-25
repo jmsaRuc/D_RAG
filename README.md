@@ -40,7 +40,7 @@
   </ol>
 </details>
 
-## About The Project :mag:
+## About The Project :newspaper:
 
 [![Product Name Screen Shot][product-screenshot]](https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024)
 
@@ -237,7 +237,7 @@ The D_RAG graph consists of several nodes that work together to process user que
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Outputs :open_file_folder:
+## Outputs :speech_balloon:
 
 The output of the graph is a markdown file containing the research summary, with citations to the sources used. All sources gathered during research are saved to the graph state. You can visualize them in the graph state, which is visible in LangGraph Studio:
 
