@@ -40,6 +40,9 @@
       <a href="#outputs">Outputs :speech_balloon:</a>
     </li>
     <li>
+      <a herf=#contributors> Contributors :wrench:</a>
+    </li>
+    <li>
       <a href="#acknowledgments">Acknowledgments :clap:</a>
     </li>
   </ol>
