@@ -17,7 +17,7 @@ repos:
             language: system
             pass_filenames: false
             always_run: true
-            args: ["check", "./src/ollama_deep_researcher", "--fix"]
+            args: ["check", "./src/d_rag", "--fix"]
 
           - id: mypy
             name: Validate types with MyPy
@@ -25,4 +25,4 @@ repos:
             language: system
             types: [python]
             pass_filenames: false
-            args: ["--config-file", "pyproject.toml", "./src/ollama_deep_researcher"]
+            args: ["--config-file", "pyproject.toml", "./src/d_rag"]

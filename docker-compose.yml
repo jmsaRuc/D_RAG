@@ -3,7 +3,7 @@ volumes:
         driver: local
 services:
     langgraph-redis:
-        image: redis:6
+        image: redis:8
         healthcheck:
             test: redis-cli ping
             interval: 5s
@@ -11,7 +11,7 @@ services:
             retries: 5
 
     langgraph-postgres:
-        image: postgres:16
+        image: postgres:17
         ports:
             - "5433:5432"
         environment:
@@ -30,7 +30,11 @@ services:
         build:
             context: ./
             dockerfile: ./lanchain-api.Dockerfile
-        image: ollama-deep-researcher:0.0.2
+            args:
+                - DOCKER_BUILDKIT=1
+                - COMPOSE_DOCKER_CLI_BUILD=1
+            target: runtime
+        image: d_rag:0.1.0
         restart: always
         ports:
             - "2024:2024"                                      #<===== NOTE this change
@@ -45,9 +49,7 @@ services:
             POSTGRES_URI: postgres://postgres:postgres@langgraph-postgres:5432/postgres?sslmode=disable
             LLM_PROVIDER: ${LLM_PROVIDER}
             OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
-            TAVILY_API_KEY: ${TAVILY_API_KEY}
             MAX_WEB_RESEARCH_LOOPS: ${MAX_WEB_RESEARCH_LOOPS}
-            FETCH_FULL_PAGE: ${FETCH_FULL_PAGE}
             LOCAL_LLM: ${LOCAL_LLM}
             GROQ_API_KEY: ${GROQ_API_KEY}
             GROQ_LLM: ${GROQ_LLM}
@@ -57,4 +59,3 @@ services:
             OPENAI_LLM: ${OPENAI_LLM}
         volumes:
             - /dev/shm:/dev/shm
-        user: "appuser"

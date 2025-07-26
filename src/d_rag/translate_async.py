@@ -9,12 +9,12 @@ from langchain_openai import ChatOpenAI
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
 
-from ollama_deep_researcher.prompts import translate_texts_instructions
-from ollama_deep_researcher.state import SummaryState
-from ollama_deep_researcher.utils import strip_thinking_tokens
+from d_rag.prompts import translate_texts_instructions
+from d_rag.state import SummaryState
+from d_rag.utils import strip_thinking_tokens
 
 # Configure logging for the module
-log = logging.getLogger("ollama_deep_researcher.graph")
+log = logging.getLogger("d_rag.graph")
 
 # Load the SentenceTransformer model for encoding text
 model = SentenceTransformer("dilovancelik/all-distilroberta-v1_danish_law_fine_tune")

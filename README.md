@@ -38,6 +38,9 @@
       <a href="#-quickstart">Quickstart :rocket:</a>
     </li>
     <li>
+      <a href="#example-usage">Example Usage :question:</a>
+    </li>
+    <li>
       <a href="#how-drag-works">How D_RAG Works :microscope:</a>
     </li>
     <li>
@@ -142,8 +145,17 @@ Follow these steps:
 ```shell
 poetry install
 ```
+2. Setup crawl4ai and playwright:
+```shell
+poetry run crawl4ai-setup
+poetry run playwright install --with-deps chromium
+```
+check if the installation was successful by running diagnostics:
+```shell
+poetry run crawl4ai-doctor
+```
 
-2. Run the application using Poetry:
+3. Run the application using Poetry:
 
 ```shell
 poetry run langgraph dev --allow-blocking --host 0.0.0.0
@@ -194,6 +206,69 @@ Open `LangGraph Studio Web UI` via the URL above. In the `configuration` tab, yo
 2. LangGraph UI configuration
 3. Default values in the Configuration class (lowest priority)
 ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Example Usage :question:
+
+**User:** 
+Lav en liste over hvad Justitsministeren kan fastsætte, I den juridiske context indsamlinger.
+
+<details>
+<summary>:speech_balloon:<strong>D-RAG:</strong></summary>
+
+### Svar
+
+
+**Beslutninger fra Justitsministeren i den retlige kontekst for indsamlinger i Danmark**
+
+På baggrund af den danske lovgivning har Justitsministeren en betydelig myndighed i forvaltningen af indsamlinger. De nøglebeslutninger og ansvarsområder for ministeren er følgende:
+
+1. **Udpegelse af Indsamlingsnævnet:**
+   - Ministeren udpeger formanden og medlemmerne af Indsamlingsnævnet, hvilket sikrer dets uafhængighed og ekspertise (Lov om indsamling, §9, stk. 1).
+
+2. **Lovgivningsmyndighed:**
+   - Ministeren fastsætter nærmere regler for fremgangsmåden ved indsamlinger, kontrol over midlers anvendelse samt dokumentationskrav for ansøgninger (Lov om indsamling, §15, stk. 1).
+
+3. **Gennemførelse af sanktioner:**
+   - Ministeren overvåger gennemførelsen af sanktioner for overtrædelse af loven, herunder bøder og strafansvar for juridiske personer (Lov om indsamling, §16, stk. 1-3).
+
+4. **Udstedelse af bekendtgørelser og cirkulærer:**
+   - Ministeren udsteder cirkulærer, som f.eks. Bekendtgørelsen om forretningsorden for Indsamlingsnævnet, der fastlægger nævnets opgaver, beslutningsprocesser og klagebehandling (Bekendtgørelse om forretningsorden for Indsamlingsnævnet, §§3-19).
+   - Ministeren udsteder ligeledes Bekendtgørelsen om indsamling m.v., der indeholder detaljerede bestemmelser om håndtering af midler, regnskab og revision (Bekendtgørelse om indsamling m.v., §§6-12).
+
+5. **Tilpasning til digitale fremskridt:**
+   - Ministeren har myndighed til at opdatere sammensætningen af Indsamlingsnævnet for at inkludere eksperter inden for IT og digital udvikling, hvilket afspejler væksten af digitale indsamlinger (Lov om indsamling, §9, stk. 1).
+
+6. **Forstærket kontrol og gennemsigtighed:**
+   - Ministeren introducererer strukturerede krav til indsamlingsorganisationer og understreger gennemsigtighed, herunder offentliggørelse af regnskaber og midlers anvendelse (Lov om indsamling, §10, stk. 2).
+
+Disse beslutninger understreger Justitsministerens centrale rolle i tilsyn, lovkonkretisering og gennemførelse inden for den retlige ramme for indsamlinger i Danmark.
+
+ #### Kilder fundet (ikke nødvendigvis anvendt):
+* Lov om indsamling m.v. : https://www.retsinformation.dk/eli/lta/2014/511
+  * Lov om ændring af lov om indsamling m.v. og lov om fonde og visse foreninger (Indsamlinger blandt juridiske personer, testamentariske dispositioner m.v.) : https://www.retsinformation.dk/eli/lta/2019/81
+  * Lov om ændring af lov om indsamling m.v. (Styrket kontrol med indsamlinger som led i indsatsen mod terrorfinansiering og hvidvask) : https://www.retsinformation.dk/eli/lta/2020/105
+  * Lov om ændring af lov om indsamling m.v. (Ændring af Indsamlingsnævnets sammensætning, øgede kontrolmuligheder m.v.) : https://www.retsinformation.dk/eli/lta/2023/743
+  * Bekendtgørelse om indsamling m.v. : https://www.retsinformation.dk/eli/lta/2020/160
+  * Bekendtgørelse om forretningsorden for Indsamlingsnævnet : https://www.retsinformation.dk/eli/lta/2014/895
+* Lov om juridisk rådgivning : https://www.retsinformation.dk/eli/lta/2006/419
+  * Lov om ændring af lov om formidling af fast ejendom m.v. og lov om juridisk rådgivning (Indførelse af regler for køberformidling og skærpelse af sanktionsmulighederne for Disciplinærnævnet for Ejendomsmæglere) : https://www.retsinformation.dk/eli/lta/2023/733
+* Lov om supplerende bestemmelser til forordningen om kunstig intelligens : https://www.retsinformation.dk/eli/lta/2025/467
+* Bekendtgørelse om indsamling m.v. : https://www.retsinformation.dk/eli/lta/2020/160
+  * Bekendtgørelse om ændring af bekendtgørelse om indsamling m.v. : https://www.retsinformation.dk/eli/lta/2023/1000
+* Bekendtgørelse om anvendelse af domstolenes sagsportal i borgerlige retssager og sager om optagelse af bevis om borgerlige krav : https://www.retsinformation.dk/eli/lta/2016/1173
+  * Bekendtgørelse om ændring af bekendtgørelse om anvendelse af domstolenes sagsportal i borgerlige retssager og sager om optagelse af bevis om borgerlige krav : https://www.retsinformation.dk/eli/lta/2018/90
+  * Bekendtgørelse om ændring af bekendtgørelse om anvendelse af domstolenes sagsportal i borgerlige retssager og sager om optagelse af bevis om borgerligere krav : https://www.retsinformation.dk/eli/lta/2023/1697
+* Kong Christian Den Femtis Danske Lov (* 1) (* 2) : https://www.retsinformation.dk/eli/retsinfo/1683/11000
+  * Kgl. resolution om bemyndigelse for stiftsøvrighederne til hver for sit stift at fastsætte tidspunktet for afholdelse af det årlige landemode.  : https://www.retsinformation.dk/eli/retsinfo/1991/12065
+  * Danmarks og Norges Kirke-Ritual (Kirkeritualet) (* 1)  : https://www.retsinformation.dk/eli/retsinfo/1685/12000
+  * Præst. Tavshedspligt  : https://www.retsinformation.dk/eli/retsinfo/1986/12025
+* Lov om ændring af lov om indsamling m.v. (Styrket kontrol med indsamlinger som led i indsatsen mod terrorfinansiering og hvidvask) : https://www.retsinformation.dk/eli/lta/2020/105
+* Lov om ændring af lov om indsamling m.v. og lov om fonde og visse foreninger (Indsamlinger blandt juridiske personer, testamentariske dispositioner m.v.) : https://www.retsinformation.dk/eli/lta/2019/81
+
+</details>
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

@@ -17,12 +17,12 @@ from crawl4ai.content_filter_strategy import PruningContentFilter
 from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
 from crawl4ai.models import CrawlResultContainer
 
-from ollama_deep_researcher.state import (
+from d_rag.state import (
     SummaryState,
 )
 
 # Set up logging for the module
-log = logging.getLogger("ollama_deep_researcher.graph")
+log = logging.getLogger("d_rag.graph")
 
 ##_________________________search and link/metada grapper_______________________________
 
@@ -337,7 +337,7 @@ async def main_crawl(id_url_pair_v: Dict[int, str]) -> Dict[int, CrawlResultCont
                     f"Id: {id}, URL: {url}, Error: {result.error_message!s}",
                 )
                 log.warning(
-                    f"URL Macthing Id: {id_url_pair_v[id]}",
+                    f"URL Macthing Id: {id_url_pair_v[id]}",  # noqa: PLR1733
                 )
                 end_results[id] = result
                 break
