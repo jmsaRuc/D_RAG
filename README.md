@@ -44,7 +44,7 @@
       <a href="#how-drag-works">How D_RAG Works :microscope:</a>
     </li>
     <li>
-      <a herf=#contributors> Contributors :wrench:</a>
+      <a herf=#Contributors> Contributors :wrench:</a>
     </li>
     <li>
       <a href="#acknowledgments">Acknowledgments :clap:</a>
@@ -325,7 +325,7 @@ The D_RAG graph consists of several nodes that work together to process user que
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Contributors: :wrench:
+## Contributors :wrench:
 
 <a href="https://github.com/jmsaRuc/D_RAG/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jmsaRuc/D_RAG" alt="contrib.rocks image" />
