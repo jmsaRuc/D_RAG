@@ -17,12 +17,12 @@ from crawl4ai.content_filter_strategy import PruningContentFilter
 from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
 from crawl4ai.models import CrawlResultContainer
 
-from ollama_deep_researcher.state import (
+from d_rag.state import (
     SummaryState,
 )
 
 # Set up logging for the module
-log = logging.getLogger("ollama_deep_researcher.graph")
+log = logging.getLogger("d_rag.graph")
 
 ##_________________________search and link/metada grapper_______________________________
 

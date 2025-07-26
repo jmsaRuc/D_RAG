@@ -10,8 +10,8 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from typing_extensions import Literal
 
-from ollama_deep_researcher.configuration import Configuration
-from ollama_deep_researcher.prompts import (
+from d_rag.configuration import Configuration
+from d_rag.prompts import (
     final_answer_instructions,
     query_writer_instructions_with_tag,
     reflection_instructions,
@@ -20,21 +20,21 @@ from ollama_deep_researcher.prompts import (
     translate_qustion_instructions,
     translate_texts_whith_ex_instructions,
 )
-from ollama_deep_researcher.retsinfo_crawl import (
+from d_rag.retsinfo_crawl import (
     retsinfo_search_and_crawl,
 )
-from ollama_deep_researcher.state import (
+from d_rag.state import (
     SummaryState,
     SummaryStateInput,
     SummaryStateOutput,
 )
-from ollama_deep_researcher.translate_async import (
+from d_rag.translate_async import (
     deduplicate_translate_and_format_sources,
 )
-from ollama_deep_researcher.utils import format_sources, strip_thinking_tokens
+from d_rag.utils import format_sources, strip_thinking_tokens
 
 # Set up logging for the graph
-log = logging.getLogger("ollama_deep_researcher.graph")
+log = logging.getLogger("d_rag.graph")
 
 
 # Nodes

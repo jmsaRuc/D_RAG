@@ -38,6 +38,9 @@
       <a href="#-quickstart">Quickstart :rocket:</a>
     </li>
     <li>
+      <a href="#example-usage">Example Usage :question:</a>
+    </li>
+    <li>
       <a href="#how-drag-works">How D_RAG Works :microscope:</a>
     </li>
     <li>
@@ -199,12 +202,13 @@ Open `LangGraph Studio Web UI` via the URL above. In the `configuration` tab, yo
 
 ## Example Usage :question:
 
-**User:** Lav en liste over hvad Justitsministeren kan fastsætte, I den juridiske context indsamlinger.
+**User:** 
+Lav en liste over hvad Justitsministeren kan fastsætte, I den juridiske context indsamlinger.
 
 <details>
 <summary>:speech_balloon:<strong>D-RAG:</strong></summary>
 
-## Svar
+### Svar
 
 
 **Beslutninger fra Justitsministeren i den retlige kontekst for indsamlinger i Danmark**
@@ -232,7 +236,7 @@ På baggrund af den danske lovgivning har Justitsministeren en betydelig myndigh
 
 Disse beslutninger understreger Justitsministerens centrale rolle i tilsyn, lovkonkretisering og gennemførelse inden for den retlige ramme for indsamlinger i Danmark.
 
- ### Kilder fundet (ikke nødvendigvis anvendt):
+ #### Kilder fundet (ikke nødvendigvis anvendt):
 * Lov om indsamling m.v. : https://www.retsinformation.dk/eli/lta/2014/511
   * Lov om ændring af lov om indsamling m.v. og lov om fonde og visse foreninger (Indsamlinger blandt juridiske personer, testamentariske dispositioner m.v.) : https://www.retsinformation.dk/eli/lta/2019/81
   * Lov om ændring af lov om indsamling m.v. (Styrket kontrol med indsamlinger som led i indsatsen mod terrorfinansiering og hvidvask) : https://www.retsinformation.dk/eli/lta/2020/105
