@@ -38,13 +38,10 @@
       <a href="#-quickstart">Quickstart :rocket:</a>
     </li>
     <li>
-      <a href="#example-usage">Example Usage :question:</a>
+      <a href="#example-outputs">Example Outputse :speech_balloon:</a>
     </li>
     <li>
       <a href="#how-drag-works">How D_RAG Works :microscope:</a>
-    </li>
-    <li>
-      <a href="#outputs">Outputs :speech_balloon:</a>
     </li>
     <li>
       <a herf=#contributors> Contributors :wrench:</a>
@@ -324,19 +321,6 @@ The D_RAG graph consists of several nodes that work together to process user que
 11. **Finalized Answer:**  
     - The system appends all source titles and URLs to the final translated answer.  
     - A title is added to the answer along with a subtitle to the source list, providing a structured end result.
-
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Outputs :speech_balloon:
-
-The output of the graph is a markdown file containing the research summary, with citations to the sources used. All sources gathered during research are saved to the graph state. You can visualize them in the graph state, which is visible in LangGraph Studio:
-
-(indest her billede)
-
-The final summary is saved to the graph state as well
-
-(indset her billede)
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
