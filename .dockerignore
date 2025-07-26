@@ -1,0 +1,16 @@
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.whl
+*.egg-info/
+dist/
+build/
+
+
+.git/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class

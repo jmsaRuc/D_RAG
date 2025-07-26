@@ -1,82 +1,64 @@
-FROM --platform=$BUILDPLATFORM python:3.12-slim-bookworm AS prod
-
+FROM --platform=$BUILDPLATFORM python:3.12-slim-bookworm AS builder
 
 ARG APP_HOME=/app
 
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-build-essential \
-curl \
-wget \
-gnupg \
-git \
-cmake \
-pkg-config \
-python3-dev \
-libjpeg-dev \
-&& apt-get clean \ 
-&& rm -rf /var/lib/apt/lists/*
-
-
-RUN apt-get update && apt-get dist-upgrade -y \
-&& rm -rf /var/lib/apt/lists/*
-
-# Create a non-root user and group
-RUN groupadd -r appuser && useradd --no-log-init -r -g appuser appuser
-
-RUN mkdir -p /home/appuser && chown -R appuser:appuser /home/appuser 
-
-
-# --- Install Poetry ---
-ARG POETRY_VERSION=2.1.1
-ENV POETRY_VIRTUALENVS_IN_PROJECT=false
-ENV POETRY_VIRTUALENVS_CREATE=true
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV POETRY_VIRTUALENVS_OPTIONS_SYSTEM_SITE_PACKAGES=ture
-ENV POETRY_CACHE_DIR=/home/appuser/.cache/pypoetry
-ENV POETRY_HOME=/home/appuser/.local/share/pypoetry
-ENV POETRY_VIRTUALENVS_PATH=/home/appuser/.cache/pypoetry/virtualenvs
-ENV PYTHONUNBUFFERED=1
+ENV POETRY_VERSION=2.1.1 \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
 RUN pip install "poetry==${POETRY_VERSION}"
 
 WORKDIR ${APP_HOME}
 
-
-# 1) Copy the repository content
+# Copying requirements of a project
 COPY pyproject.toml poetry.lock ${APP_HOME}/
+RUN touch README.md
+RUN touch LICENSE
+
+RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --no-root --only main
+
+RUN rm -rf $POETRY_CACHE_DIR
+
+
+FROM --platform=$BUILDPLATFORM python:3.12-slim-bookworm AS runtime
+
+ARG APP_HOME=/app
+ENV POETRY_VERSION=2.1.1
+
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
+
+# Copying the rest of the project files
+
+COPY pyproject.toml poetry.lock ${APP_HOME}/
+COPY --from=builder ${APP_HOME}/.venv ${VIRTUAL_ENV}
+
+
 COPY langgraph.json ${APP_HOME}/
-COPY src ${APP_HOME}/src
+
+COPY src ${APP_HOME}/src/
+
+WORKDIR ${APP_HOME}
 
 
-# 2) Install the package
-RUN poetry install --only main
 
-# 4) Install crawl4ai and playwright
-RUN poetry run crawl4ai-setup
-RUN poetry run playwright install --with-deps chromium
+RUN touch README.md
+RUN touch LICENSE
 
-# 5) Copy the playwright cache to the non-root user
-RUN mkdir -p /home/appuser/.cache/ms-playwright \
-    && cp -r /root/.cache/ms-playwright/chromium-* /home/appuser/.cache/ms-playwright/ \
-    && chown -R appuser:appuser /home/appuser/.cache/ms-playwright
-
-# 6) Set permissions for the app directory
-RUN chown -R appuser:appuser ${APP_HOME} \
-    && chown -R appuser:appuser /home/appuser/
-
-# 7) Set the user to the non-root user
-USER appuser
-
-# 8) Test crawl4ai
-RUN poetry run crawl4ai-doctor
+RUN pip install "poetry==${POETRY_VERSION}" \
+    && poetry install --only main \
+    && pip uninstall poetry -y \
+    && rm -rf $POETRY_CACHE_DIR
+    
+RUN crawl4ai-setup
+RUN playwright install --with-deps chromium
+RUN crawl4ai-doctor
 
 EXPOSE 2024
 
-# 9) run the app
-
-CMD ["poetry", "run",\
-     "langgraph", \
+CMD ["langgraph", \
      "dev", \
      "--allow-blocking",\
      "--host", "0.0.0.0"]

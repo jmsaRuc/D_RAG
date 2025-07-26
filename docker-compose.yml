@@ -30,7 +30,11 @@ services:
         build:
             context: ./
             dockerfile: ./lanchain-api.Dockerfile
-        image: ollama-deep-researcher:0.1.0
+            args:
+                - DOCKER_BUILDKIT=1
+                - COMPOSE_DOCKER_CLI_BUILD=1
+            target: runtime
+        image: d_rag:0.1.0
         restart: always
         ports:
             - "2024:2024"                                      #<===== NOTE this change
@@ -55,4 +59,3 @@ services:
             OPENAI_LLM: ${OPENAI_LLM}
         volumes:
             - /dev/shm:/dev/shm
-        user: "appuser"
