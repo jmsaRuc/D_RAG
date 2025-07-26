@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM python:3.12-slim-bookworm AS builder
+FROM --platform=$BUILDPLATFORM python:3.13-slim-bookworm AS builder
 
 ARG APP_HOME=/app
 
@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --no-root --only 
 RUN rm -rf $POETRY_CACHE_DIR
 
 
-FROM --platform=$BUILDPLATFORM python:3.12-slim-bookworm AS runtime
+FROM --platform=$BUILDPLATFORM python:3.13-slim-bookworm AS runtime
 
 ARG APP_HOME=/app
 ENV POETRY_VERSION=2.1.1
