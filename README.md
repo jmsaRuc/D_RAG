@@ -145,8 +145,17 @@ Follow these steps:
 ```shell
 poetry install
 ```
+2. Setup crawl4ai and playwright:
+```shell
+poetry run crawl4ai-setup
+poetry run playwright install --with-deps chromium
+```
+check if the installation was successful by running diagnostics:
+```shell
+poetry run crawl4ai-doctor
+```
 
-2. Run the application using Poetry:
+3. Run the application using Poetry:
 
 ```shell
 poetry run langgraph dev --allow-blocking --host 0.0.0.0

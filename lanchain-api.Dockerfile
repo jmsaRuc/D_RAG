@@ -42,15 +42,15 @@ RUN pip install "poetry==${POETRY_VERSION}"
 
 WORKDIR ${APP_HOME}
 
-# 1) Install dependencies
-COPY pyproject.toml poetry.lock /app/
-RUN poetry install --no-root
 
-# 2) Copy the repository content
-COPY . ${APP_HOME}/
+# 1) Copy the repository content
+COPY pyproject.toml poetry.lock ${APP_HOME}/
+COPY langgraph.json ${APP_HOME}/
+COPY src ${APP_HOME}/src
 
-# 3) Install the package
-RUN poetry install
+
+# 2) Install the package
+RUN poetry install --only main
 
 # 4) Install crawl4ai and playwright
 RUN poetry run crawl4ai-setup
