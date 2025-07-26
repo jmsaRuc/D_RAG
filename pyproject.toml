@@ -1,12 +1,15 @@
 [project]
 name = "d_rag"
 version = "0.1.0"
+name = "d_rag"
+version = "0.1.0"
 description = "Danish legal research assistent utilizing and iteration on deep research, using either Ollama or Groq as the LLM backend."
 authors = [
     { name = "Jens Mikkel Andersen" }
+    { name = "Jens Mikkel Andersen" }
 ]
 readme = "README.md"
-license = { file = "LICENSE" }
+license = { text = "Apache-2.0 license" }
 requires-python = ">=3.12,<4.0"
 dependencies = [
     "langgraph>=0.2.55",
@@ -47,6 +50,7 @@ torch = {source = "torch"}
 profile = "black"
 multi_line_output = 3
 src_paths = ["src/d_rag",]
+src_paths = ["src/d_rag",]
 
 [tool.mypy]
 strict = true
@@ -62,6 +66,7 @@ warn_return_any = false
 namespace_packages = true
 files = [
     "src/d_rag/**/*.py",
+    "src/d_rag/**/*.py",
 ]
 
 [[tool.mypy.overrides]]
@@ -71,8 +76,17 @@ module = [
 ignore_missing_imports = true
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=73.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["d_rag"]
+
+[tool.setuptools.package-dir]
+"d_rag" = "src/d_rag"
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
 
 [tool.ruff]
 # List of enabled rulsets.
