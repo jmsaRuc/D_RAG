@@ -43,8 +43,8 @@
     <li>
       <a href="#how-drag-works">How D_RAG Works :microscope:</a>
     </li>
-    <li>
-      <a herf=#Contributors> Contributors :wrench:</a>
+    <li> 
+      <a href="#contributors">Contributors :wrench:</a>
     </li>
     <li>
       <a href="#acknowledgments">Acknowledgments :clap:</a>
