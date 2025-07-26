@@ -822,8 +822,12 @@ python-dotenv = ">=1.0,<2.0"
 rank-bm25 = ">=0.2,<1.0"
 requests = ">=2.26,<3.0"
 rich = ">=13.9.4"
+<<<<<<< HEAD
 scikit-learn = {version = "*", optional = true, markers = "extra == \"all\""}
 selenium = {version = "*", optional = true, markers = "extra == \"all\""}
+=======
+shapely = ">=2.0.0"
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 snowballstemmer = ">=2.2,<3.0"
 tf-playwright-stealth = ">=1.1.0"
 xxhash = ">=3.4,<4.0"
@@ -981,6 +985,7 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "duckduckgo-search"
 version = "8.0.2"
 description = "Search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine."
@@ -1001,6 +1006,8 @@ primp = ">=0.15.0"
 dev = ["mypy (>=1.14.1)", "pytest (>=8.3.4)", "pytest-dependency (>=0.6.0)", "ruff (>=0.9.2)"]
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "executing"
 version = "2.2.0"
 description = "Get the currently executing AST node of a frame, and other information"
@@ -1423,6 +1430,7 @@ socks = ["socksio (==1.*)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+<<<<<<< HEAD
 name = "httpx-sse"
 version = "0.4.0"
 description = "Consume Server-Sent Event (SSE) messages with HTTPX."
@@ -1435,6 +1443,8 @@ files = [
 ]
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "huggingface-hub"
 version = "0.34.0"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
@@ -1938,6 +1948,7 @@ docs = ["myst-parser", "pydata-sphinx-theme", "sphinx-autodoc-typehints", "sphin
 test = ["ipykernel", "pre-commit", "pytest (<8)", "pytest-cov", "pytest-timeout"]
 
 [[package]]
+<<<<<<< HEAD
 name = "langchain"
 version = "0.3.25"
 description = "Building applications with LLMs through composability"
@@ -2007,6 +2018,8 @@ SQLAlchemy = ">=1.4,<3"
 tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<10"
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "langchain-core"
 version = "0.3.72"
 description = "Building applications with LLMs through composability"
@@ -2077,6 +2090,7 @@ openai = ">=1.86.0,<2.0.0"
 tiktoken = ">=0.7,<1"
 
 [[package]]
+<<<<<<< HEAD
 name = "langchain-text-splitters"
 version = "0.3.8"
 description = "LangChain text splitting utilities"
@@ -2092,6 +2106,8 @@ files = [
 langchain-core = ">=0.3.51,<1.0.0"
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "langgraph"
 version = "0.5.4"
 description = "Building stateful, multi-actor applications with LLMs"
@@ -3330,6 +3346,7 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "outcome"
 version = "1.3.0.post0"
 description = "Capture the outcome of Python function calls."
@@ -3342,6 +3359,8 @@ files = [
 ]
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "packaging"
 version = "25.0"
 description = "Core utilities for Python packages"
@@ -3903,6 +3922,7 @@ files = [
 typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
+<<<<<<< HEAD
 name = "pydantic-settings"
 version = "2.9.1"
 description = "Settings management using Pydantic"
@@ -3927,6 +3947,8 @@ toml = ["tomli (>=2.0.1)"]
 yaml = ["pyyaml (>=6.0.1)"]
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "pyee"
 version = "13.0.0"
 description = "A rough port of Node.js's EventEmitter to Python with a few tricks of its own"
@@ -4766,6 +4788,7 @@ doc = ["intersphinx_registry", "jupyterlite-pyodide-kernel", "jupyterlite-sphinx
 test = ["Cython", "array-api-strict (>=2.0,<2.1.1)", "asv", "gmpy2", "hypothesis (>=6.30)", "meson", "mpmath", "ninja ; sys_platform != \"emscripten\"", "pooch", "pytest", "pytest-cov", "pytest-timeout", "pytest-xdist", "scikit-umfpack", "threadpoolctl"]
 
 [[package]]
+<<<<<<< HEAD
 name = "selenium"
 version = "4.33.0"
 description = "Official Python bindings for Selenium WebDriver"
@@ -4786,6 +4809,8 @@ urllib3 = {version = ">=2.4.0,<2.5.0", extras = ["socks"]}
 websocket-client = ">=1.8.0,<1.9.0"
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "sentence-transformers"
 version = "5.0.0"
 description = "Embeddings, Retrieval, and Reranking"
@@ -5031,6 +5056,7 @@ mpmath = ">=1.1.0,<1.4"
 dev = ["hypothesis (>=6.70.0)", "pytest (>=7.1.0)"]
 
 [[package]]
+<<<<<<< HEAD
 name = "tavily-python"
 version = "0.7.2"
 description = "Python wrapper for the Tavily API"
@@ -5048,6 +5074,8 @@ requests = "*"
 tiktoken = ">=0.5.1"
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "tenacity"
 version = "9.1.2"
 description = "Retry code until it succeeds"
@@ -5383,6 +5411,7 @@ test = ["pyinstrument", "pytest", "pytest-cov", "ruff"]
 test-more = ["coveralls", "ezdxf", "ipython", "marimo", "matplotlib", "pymeshlab", "pyright", "pytest-beartype ; python_version >= \"3.10\"", "triangle", "xatlas"]
 
 [[package]]
+<<<<<<< HEAD
 name = "trimesh"
 version = "4.7.1"
 description = "Import, export, process, analyze and view triangular meshes."
@@ -5406,6 +5435,8 @@ test = ["pyinstrument", "pytest", "pytest-cov", "ruff"]
 test-more = ["coveralls", "ezdxf", "ipython", "marimo", "matplotlib", "pymeshlab", "pyright", "pytest-beartype ; python_version >= \"3.10\"", "triangle", "xatlas"]
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "triton"
 version = "3.3.0"
 description = "A language and compiler for custom Deep Learning operations"
@@ -5442,6 +5473,7 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "typing-inspect"
 version = "0.9.0"
 description = "Runtime inspection utilities for typing module."
@@ -5454,6 +5486,8 @@ files = [
 ]
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "typing-inspection"
 version = "0.4.1"
 description = "Runtime typing introspection tools"
@@ -5487,6 +5521,7 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+<<<<<<< HEAD
 name = "uv"
 version = "0.6.17"
 description = "An extremely fast Python package and project manager, written in Rust."
@@ -5515,6 +5550,8 @@ files = [
 ]
 
 [[package]]
+=======
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
 name = "uvicorn"
 version = "0.35.0"
 description = "The lightning-fast ASGI server."
@@ -6074,7 +6111,11 @@ cffi = ["cffi (>=1.11)"]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
 <<<<<<< HEAD
+<<<<<<< HEAD
 content-hash = "5bcf38ba1e30d9b9c62894eca495f9944683a6b0bd3f36c63957faa6c214464a"
 =======
 content-hash = "ea1d2edbe026099fa13225befc9c3d57b90b2435bd7fc828d2dc0167fe6d16e3"
 >>>>>>> f8252d3 (Update all (major) (#28))
+=======
+content-hash = "95494b545531ecf2d4746eb182f1980c69501e6d4b8942f3154dccd557dcbe37"
+>>>>>>> 3e8dc85 (Refactor dependencies in pyproject.toml: removed unused packages and adjusted version constraints)
