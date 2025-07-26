@@ -9,7 +9,7 @@ authors = [
     { name = "Jens Mikkel Andersen" }
 ]
 readme = "README.md"
-license = { text = "Apache-2.0 license" }
+license = { file = "LICENSE" }
 requires-python = ">=3.12,<4.0"
 dependencies = [
     "langgraph>=0.2.55",
@@ -18,7 +18,6 @@ dependencies = [
     "openai>=1.12.0",
     "langchain_openai>=0.3.9",
     "httpx>=0.28.1",
-    "markdownify>=0.11.0",
     "python-dotenv==1.1.1",
     "langgraph-cli[inmem] (>=0.3.6,<0.4.0)",
     "langchain-groq (>=0.3.2,<0.4.0)",
@@ -74,17 +73,8 @@ module = [
 ignore_missing_imports = true
 
 [build-system]
-requires = ["setuptools>=73.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-packages = ["d_rag"]
-
-[tool.setuptools.package-dir]
-"d_rag" = "src/d_rag"
-
-[tool.setuptools.package-data]
-"*" = ["py.typed"]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 # List of enabled rulsets.
