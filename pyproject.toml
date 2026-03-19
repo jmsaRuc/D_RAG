@@ -1,11 +1,8 @@
 [project]
 name = "d_rag"
 version = "0.1.0"
-name = "d_rag"
-version = "0.1.0"
 description = "Danish legal research assistent utilizing and iteration on deep research, using either Ollama or Groq as the LLM backend."
 authors = [
-    { name = "Jens Mikkel Andersen" }
     { name = "Jens Mikkel Andersen" }
 ]
 readme = "README.md"
@@ -46,7 +43,6 @@ torch = {source = "torch"}
 [tool.isort]
 profile = "black"
 multi_line_output = 3
-src_paths = ["src/d_rag",]
 src_paths = ["src/d_rag",]
 
 [tool.mypy]
