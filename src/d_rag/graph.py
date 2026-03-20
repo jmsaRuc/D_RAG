@@ -75,6 +75,8 @@ async def translate_question(
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=12000,
+            timeout=120,
+            max_retries=5,
         )
     elif configurable.llm_provider == "openai":
         llm_translate_q = ChatOpenAI(  # type: ignore[call-arg]
@@ -82,6 +84,8 @@ async def translate_question(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=12000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         llm_translate_q = ChatOllama(
@@ -145,6 +149,8 @@ async def generate_research_topic(
             temperature=0,
             max_tokens=34000,
             response_format={"type": "json_object"},
+            timeout=120,
+            max_retries=5,
         )
     elif configurable.llm_provider == "openai":
         llm_genrate_research_topic = ChatOpenAI(  # type: ignore[call-arg]
@@ -153,6 +159,8 @@ async def generate_research_topic(
             temperature=1,
             max_tokens=12000,
             response_format={"type": "json_object"},
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         llm_genrate_research_topic = ChatOllama(  # type: ignore[call-arg]
@@ -229,6 +237,8 @@ async def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[st
             temperature=0.1,
             max_tokens=12000,
             response_format={"type": "json_object"},
+            timeout=120,
+            max_retries=5,
         )
     elif configurable.llm_provider == "openai":
         llm_json_mode = ChatOpenAI(  # type: ignore[call-arg]
@@ -237,6 +247,8 @@ async def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[st
             temperature=1,
             max_tokens=12000,
             response_format={"type": "json_object"},
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         llm_json_mode = ChatOllama(  # type: ignore[call-arg]
@@ -329,8 +341,9 @@ async def translate_search_results(
         llm_translate_s = ChatGroq(  # type: ignore[call-arg]
             model=configurable.groq_llm,
             temperature=0.1,
-            request_timeout=120,
-            max_tokens=66000,
+            timeout=120,
+            max_tokens=65536,
+            max_retries=5,
         )
     elif configurable.llm_provider == "openai":
         llm_translate_s = ChatOpenAI(  # type: ignore[call-arg]
@@ -338,6 +351,8 @@ async def translate_search_results(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=66000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         llm_translate_s = ChatOllama(
@@ -414,7 +429,9 @@ async def summarize_sources(
         summarize_llm = ChatGroq(
             model=configurable.groq_llm,
             temperature=0,
-            max_tokens=131072,
+            max_tokens=65536,
+            timeout=120,
+            max_retries=5,
         )
     elif configurable.llm_provider == "openai":
         summarize_llm = ChatOpenAI(  # type: ignore[call-arg]
@@ -422,6 +439,8 @@ async def summarize_sources(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=100000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         summarize_llm = ChatOllama(
@@ -432,12 +451,17 @@ async def summarize_sources(
         )
 
     # Invoke the LLM with the system and human messages
-    result = await summarize_llm.ainvoke(
-        [
-            SystemMessage(content=summarizer_instructions),
-            HumanMessage(content=human_message_content),
-        ],
-    )
+    #
+    try:
+        result = await summarize_llm.ainvoke(
+            [
+                SystemMessage(content=summarizer_instructions),
+                HumanMessage(content=human_message_content),
+            ],
+        )
+    except Exception as e:
+        log.error(f"Error during summarization: {e}, returning existing summary")
+        return {"running_summary_en": existing_summary or ""}
 
     # Strip thinking tokens if configured
     running_summary_en = str(result.content)
@@ -483,6 +507,8 @@ async def reflect_on_summary(
             temperature=0.1,
             max_tokens=34000,
             response_format={"type": "json_object"},
+            timeout=120,
+            max_retries=5,
         )
     elif configurable.llm_provider == "openai":
         llm_json_mode_34k = ChatOpenAI(  # type: ignore[call-arg]
@@ -491,6 +517,8 @@ async def reflect_on_summary(
             temperature=1,
             max_tokens=34000,
             response_format={"type": "json_object"},
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         llm_json_mode_34k = ChatOllama(
@@ -625,6 +653,8 @@ async def translate_content_follow_up(
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=26000,
+            max_retries=5,
+            timeout=120,
         )
     elif configurable.llm_provider == "openai":
         translate_follow_up_llm = ChatOpenAI(  # type: ignore[call-arg]
@@ -632,6 +662,8 @@ async def translate_content_follow_up(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=26000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         translate_follow_up_llm = ChatOllama(
@@ -707,6 +739,8 @@ async def generate_final_answer(
             model=configurable.groq_llm,
             temperature=0.1,
             max_tokens=34000,
+            timeout=120,
+            max_retries=5,
         )
     elif configurable.llm_provider == "openai":
         final_anwser_llm = ChatOpenAI(  # type: ignore[call-arg]
@@ -714,6 +748,8 @@ async def generate_final_answer(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=34000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         final_anwser_llm = ChatOllama(
@@ -829,6 +865,8 @@ async def translate_answer(
             model=configurable.groq_llm,
             temperature=0,
             max_tokens=26000,
+            timeout=120,
+            max_retries=5,
         )
     elif configurable.llm_provider == "openai":
         translate_anwser_llm = ChatOpenAI(  # type: ignore[call-arg]
@@ -836,6 +874,8 @@ async def translate_answer(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=26000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         translate_anwser_llm = ChatOllama(

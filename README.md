@@ -67,7 +67,7 @@ It takes danish questions about danish law, and answers them in Danish, using 14
 ## Pre-requisites :white_check_mark: 
 
 pre-requisites:
-- Python 3.11 or later
+- Python 3.13 or later
 - Poetry, see [Poetry installation guide](https://python-poetry.org/docs/#installation) 
 - for localy running models, install [Ollama](https://ollama.com/download)
 - for hosted models, either get a grop API key from [Groq](https://groq.com/) or a openai API key from [OpenAI](https://platform.openai.com/signup)
@@ -118,10 +118,10 @@ LOCAL_LLM=deepseek-r1:1.5b-qwen-distill-q8_0 # the model to use, defaults to `de
 
 #### Groq Configuration
 ```shell
-LLM_PROVIDER=groq 
+LLM_PROVIDER=groq
 GROQ_API_KEY=xxx # the Groq API key to use
 GROQ_API_BASE=https://api.groq.com/ # the Groq API base URL, defaults to `https://api.groq.com/`
-GROQ_LLM=deepseek-r1-distill-llama-70b # the Groq model to use, defaults to `deepseek-r1-distill-llama-70b`
+GROQ_LLM=openai/gpt-oss-120b # the Groq model to use, defaults to `openai/gpt-oss-120b`
 ```
 #### OpenAI Configuration
 ```shell

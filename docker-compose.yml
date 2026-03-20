@@ -34,10 +34,10 @@ services:
                 - DOCKER_BUILDKIT=1
                 - COMPOSE_DOCKER_CLI_BUILD=1
             target: runtime
-        image: ghcr.io/jmsaruc/d_rag:0.1.0
+        image: ghcr.io/jmsaruc/d_rag:0.1.1
         restart: always
         ports:
-            - "2024:2024"                                      #<===== NOTE this change
+            - "${DOCKER_PORT:-2024}:2024"                                      #<===== NOTE this change
         depends_on:
             langgraph-redis:
                 condition: service_healthy
