@@ -58,7 +58,6 @@ warn_return_any = false
 namespace_packages = true
 files = [
     "src/d_rag/**/*.py",
-    "src/d_rag/**/*.py",
 ]
 
 [[tool.mypy.overrides]]

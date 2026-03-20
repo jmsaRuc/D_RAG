@@ -84,6 +84,8 @@ async def translate_question(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=12000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         llm_translate_q = ChatOllama(
@@ -157,6 +159,8 @@ async def generate_research_topic(
             temperature=1,
             max_tokens=12000,
             response_format={"type": "json_object"},
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         llm_genrate_research_topic = ChatOllama(  # type: ignore[call-arg]
@@ -243,6 +247,8 @@ async def generate_query(state: SummaryState, config: RunnableConfig) -> Dict[st
             temperature=1,
             max_tokens=12000,
             response_format={"type": "json_object"},
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         llm_json_mode = ChatOllama(  # type: ignore[call-arg]
@@ -345,6 +351,8 @@ async def translate_search_results(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=66000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         llm_translate_s = ChatOllama(
@@ -431,6 +439,8 @@ async def summarize_sources(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=100000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         summarize_llm = ChatOllama(
@@ -450,26 +460,8 @@ async def summarize_sources(
             ],
         )
     except Exception as e:
-        log.error(f"Error during summarization: {e}")
-        try:
-            result = await summarize_llm.ainvoke(
-                [
-                    SystemMessage(content=summarizer_instructions),
-                    HumanMessage(content=human_message_content),
-                ],
-            )
-        except Exception as e:
-            log.error(f"Second attempt failed during summarization: {e}")
-            try:
-                result = await summarize_llm.ainvoke(
-                    [
-                        SystemMessage(content=summarizer_instructions),
-                        HumanMessage(content=human_message_content),
-                    ],
-                )
-            except Exception as e:
-                log.error(f"Third attempt failed during summarization: {e}")
-                return {"running_summary_en": existing_summary or ""}
+        log.error(f"Error during summarization: {e}, returning existing summary")
+        return {"running_summary_en": existing_summary or ""}
 
     # Strip thinking tokens if configured
     running_summary_en = str(result.content)
@@ -525,6 +517,8 @@ async def reflect_on_summary(
             temperature=1,
             max_tokens=34000,
             response_format={"type": "json_object"},
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         llm_json_mode_34k = ChatOllama(
@@ -668,6 +662,7 @@ async def translate_content_follow_up(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=26000,
+            timeout=120,
             max_retries=5,
         )
     else:  # Default to Ollama
@@ -753,6 +748,8 @@ async def generate_final_answer(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=34000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         final_anwser_llm = ChatOllama(
@@ -877,6 +874,8 @@ async def translate_answer(
             base_url=configurable.openai_api_base,
             temperature=1,
             max_tokens=26000,
+            timeout=120,
+            max_retries=5,
         )
     else:  # Default to Ollama
         translate_anwser_llm = ChatOllama(

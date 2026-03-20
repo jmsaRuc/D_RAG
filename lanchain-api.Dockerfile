@@ -1,6 +1,8 @@
 FROM --platform=$BUILDPLATFORM python:3.14-slim-bookworm AS prod
 
-RUN apt update && apt install -y libxml2-dev libxslt-dev gcc python3-dev
+RUN apt update \
+    && apt install -y --no-install-recommends libxml2 libxslt1.1 gcc python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 ARG APP_HOME=/app
 
@@ -26,7 +28,9 @@ RUN rm -rf $POETRY_CACHE_DIR
 
 FROM --platform=$BUILDPLATFORM python:3.14-slim-bookworm AS runtime
 
-RUN apt update && apt install -y libxml2-dev libxslt-dev gcc python3-dev
+RUN apt update \
+    && apt install -y --no-install-recommends libxml2 libxslt1.1 gcc python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 ARG APP_HOME=/app
 ENV POETRY_VERSION=2.3.2
@@ -34,7 +38,7 @@ ENV POETRY_VERSION=2.3.2
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
 
-# Copying the rest of the project files2
+# Copying the rest of the project files
 
 COPY pyproject.toml poetry.lock ${APP_HOME}/
 COPY --from=prod ${APP_HOME}/.venv ${VIRTUAL_ENV}
