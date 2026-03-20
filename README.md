@@ -67,7 +67,7 @@ It takes danish questions about danish law, and answers them in Danish, using 14
 ## Pre-requisites :white_check_mark: 
 
 pre-requisites:
-- Python 3.11 or later
+- Python 3.13 or later
 - Poetry, see [Poetry installation guide](https://python-poetry.org/docs/#installation) 
 - for localy running models, install [Ollama](https://ollama.com/download)
 - for hosted models, either get a grop API key from [Groq](https://groq.com/) or a openai API key from [OpenAI](https://platform.openai.com/signup)
