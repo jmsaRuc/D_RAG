@@ -1,9 +1,10 @@
-FROM --platform=$BUILDPLATFORM python:3.13-slim-bookworm AS prod
+FROM --platform=$BUILDPLATFORM python:3.14-slim-bookworm AS prod
 
+RUN apt update && apt install -y libxml2-dev libxslt-dev gcc python3-dev
 
 ARG APP_HOME=/app
 
-ENV POETRY_VERSION=2.1.1 \
+ENV POETRY_VERSION=2.3.2 \
     POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
     POETRY_VIRTUALENVS_CREATE=1 \
@@ -23,18 +24,20 @@ RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --no-root --only 
 RUN rm -rf $POETRY_CACHE_DIR
 
 
-FROM --platform=$BUILDPLATFORM python:3.12-slim-bookworm AS runtime
+FROM --platform=$BUILDPLATFORM python:3.14-slim-bookworm AS runtime
+
+RUN apt update && apt install -y libxml2-dev libxslt-dev gcc python3-dev
 
 ARG APP_HOME=/app
-ENV POETRY_VERSION=2.1.1
+ENV POETRY_VERSION=2.3.2
 
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
 
-# Copying the rest of the project files
+# Copying the rest of the project files2
 
 COPY pyproject.toml poetry.lock ${APP_HOME}/
-COPY --from=builder ${APP_HOME}/.venv ${VIRTUAL_ENV}
+COPY --from=prod ${APP_HOME}/.venv ${VIRTUAL_ENV}
 
 
 COPY langgraph.json ${APP_HOME}/

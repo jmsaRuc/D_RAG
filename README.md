@@ -118,10 +118,10 @@ LOCAL_LLM=deepseek-r1:1.5b-qwen-distill-q8_0 # the model to use, defaults to `de
 
 #### Groq Configuration
 ```shell
-LLM_PROVIDER=groq 
+LLM_PROVIDER=groq
 GROQ_API_KEY=xxx # the Groq API key to use
 GROQ_API_BASE=https://api.groq.com/ # the Groq API base URL, defaults to `https://api.groq.com/`
-GROQ_LLM=deepseek-r1-distill-llama-70b # the Groq model to use, defaults to `deepseek-r1-distill-llama-70b`
+GROQ_LLM=openai/gpt-oss-120b # the Groq model to use, defaults to `openai/gpt-oss-120b`
 ```
 #### OpenAI Configuration
 ```shell
