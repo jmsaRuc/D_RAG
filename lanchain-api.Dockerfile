@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM python:3.14-slim-bookworm AS prod
+FROM --platform=$BUILDPLATFORM python:3.15-slim-bookworm AS prod
 
 RUN apt update \
     && apt install -y --no-install-recommends libxml2 libxslt1.1 gcc python3-dev \
@@ -26,7 +26,7 @@ RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --no-root --only 
 RUN rm -rf $POETRY_CACHE_DIR
 
 
-FROM --platform=$BUILDPLATFORM python:3.14-slim-bookworm AS runtime
+FROM --platform=$BUILDPLATFORM python:3.15-slim-bookworm AS runtime
 
 RUN apt update \
     && apt install -y --no-install-recommends libxml2 libxslt1.1 gcc python3-dev \
